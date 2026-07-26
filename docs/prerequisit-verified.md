@@ -1,34 +1,12 @@
-# Day 0 — Prerequisites Verified
+## Day 1 — end-to-end verified
 
-Date: (fill in today)
+- [x] Created and ran a `dotnet new web` project — "Hello World" responded
+- [x] `dotnet ef --version` prints (fill in version)
+- [x] Vite + React 19 scaffold booted with `pnpm dev`
+- [x] Docker ran mcr.microsoft.com/mssql/server:2022-latest
+- [x] `dotnet workload list` shows aspire (or on .NET 10, NuGet-only)
+- [x] `az account list -o table` returns subscription
 
-## Versions
+## Issues I hit and how I fixed them
 
-```
-$ dotnet --version
-(paste output here)
-
-$ node -v
-(paste output here)
-
-$ pnpm -v
-(paste output here)
-
-$ docker --version
-(paste output here)
-
-$ git --version
-(paste output here)
-
-$ az --version
-(paste first line)
-```
-
-## Azure
-
-- Subscription name: (from `az account show`)
-- Region I'll use for resources: (e.g. West Europe)
-
-## GitHub
-
-- Repo URL: https://github.com/YourName/ShopSphere
+(free-form — write anything that surprised you or broke)
