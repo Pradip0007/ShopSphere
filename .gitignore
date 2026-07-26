@@ -1,11 +1,59 @@
-*.user
-
+# .NET
 bin/
-
 obj/
+*.user
+*.suo
+*.pdb
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+[Bb]uild/
+*.dll
+*.exe
 
+# EF migrations output artifacts
+**/Migrations/*.Designer.cs.bak
+
+# IDE
+.vs/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.swp
+.idea/
+
+# Node / React
 node_modules/
+dist/
+.vite/
+coverage/
+playwright-report/
+test-results/
+.next/
 
+# Env & secrets
 .env
-
 .env.local
+.env.*.local
+*.pfx
+appsettings.Development.json
+appsettings.Local.json
+
+# OS
+Thumbs.db
+.DS_Store
+Desktop.ini
+
+# Scratch / temp
+scratch/
+tmp/
+*.log
+
+# TestResults / coverage
+TestResults/
+*.trx
+*.coverage
+coverage.cobertura.xml
