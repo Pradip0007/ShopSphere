@@ -1,0 +1,11 @@
+*.user
+
+bin/
+
+obj/
+
+node_modules/
+
+.env
+
+.env.local
