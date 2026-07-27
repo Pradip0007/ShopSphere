@@ -1,0 +1,7 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>ShopSphere.Domain</RootNamespace>
+  </PropertyGroup>
+
+</Project>
