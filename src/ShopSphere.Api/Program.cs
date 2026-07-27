@@ -1,3 +1,4 @@
+
 using ShopSphere.Domain.Catalog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,26 +9,20 @@ var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
-app.MapGet("/", () => "ShopSphere API — Day 4 alive!");
+app.MapGet("/", () => "ShopSphere API — Day 5 alive!");
 
-app.MapGet("/_debug/raise", (string? msg) =>
+app.MapGet("/_debug/category", (string name) =>
 {
-    var agg = PingAggregate.Create(msg ?? "hello");
-    var events = agg.DomainEvents.Select(e => new
-    {
-        type = e.GetType().Name,
-        e.EventId,
-        e.OccurredAt
-    }).ToArray();
-
-    agg.ClearDomainEvents();
-
+    var category = Category.Create(name);
     return new
     {
-        aggregateId = agg.Id,
-        raised = events,
-        afterClear = agg.DomainEvents.Count
+        id = category.Id.ToString(),
+        category.Name,
+        slug = category.Slug.Value,
+        parentId = category.ParentId?.ToString(),
+        events = category.DomainEvents.Select(e => e.GetType().Name).ToArray()
     };
 });
+
 
 app.Run();
