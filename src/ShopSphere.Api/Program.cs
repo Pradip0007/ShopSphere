@@ -2,17 +2,32 @@ using ShopSphere.Domain.Catalog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// This one line wires OTel, health checks, service discovery, resilience.
 builder.AddServiceDefaults();
 
 var app = builder.Build();
 
-// Maps /health/live and /health/ready — free.
 app.MapDefaultEndpoints();
 
-app.MapGet("/", () => "ShopSphere API — Day 3 alive!");
+app.MapGet("/", () => "ShopSphere API — Day 4 alive!");
 
-// Sanity endpoint — proves Domain is wired in. We'll remove it once real endpoints exist.
-app.MapGet("/_debug/new-product-id", () => new { id = ProductId.New().ToString() });
+app.MapGet("/_debug/raise", (string? msg) =>
+{
+    var agg = PingAggregate.Create(msg ?? "hello");
+    var events = agg.DomainEvents.Select(e => new
+    {
+        type = e.GetType().Name,
+        e.EventId,
+        e.OccurredAt
+    }).ToArray();
+
+    agg.ClearDomainEvents();
+
+    return new
+    {
+        aggregateId = agg.Id,
+        raised = events,
+        afterClear = agg.DomainEvents.Count
+    };
+});
 
 app.Run();
