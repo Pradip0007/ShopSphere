@@ -11,32 +11,57 @@ var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
-app.MapGet("/", () => "ShopSphere API — Day 7 alive!");
+app.MapGet("/", () => "ShopSphere API — Day 8 alive!");
+
+app.MapGet("/_debug/money", () =>
+{
+    var ten = new Money(10m, "gbp");   // normalises to GBP
+    var five = new Money(5m, "GBP");
+    var sum = ten + five;
+    var diff = ten - five;
+    var scaled = ten * 1.2m;           // 20% VAT
+
+    return new
+    {
+        ten = ten.ToString(),
+        five = five.ToString(),
+        sum = sum.ToString(),
+        diff = diff.ToString(),
+        vatInclusive = scaled.ToString(),
+        zero = Money.Zero("USD").ToString()
+    };
+});
+
+app.MapGet("/_debug/product", (string title) =>
+{
+    var category = Category.Create("Demo Category");
+    var product = Product.Create(
+        title: title,
+        description: "Placeholder description.",
+        sku: Sku.From("DEMO-001"),
+        categoryId: category.Id,
+        price: new Money(19.99m, "GBP"));
+
+    product.Publish();
+
+    return new
+    {
+        id = product.Id.ToString(),
+        product.Title,
+        slug = product.Slug.Value,
+        sku = product.Sku.Value,
+        price = product.Price.ToString(),
+        status = product.Status.ToString(),
+        events = product.DomainEvents.Select(e => e.GetType().Name).ToArray()
+    };
+});
 
 app.MapGet("/_debug/stock", () =>
 {
     var stock = StockLevel.Create(ProductId.New(), initialAvailable: 3);
-
-    var r1 = stock.Reserve(2);
-    var r2 = stock.Reserve(1);   // drives Available to 0 — depletion event
-    var r3 = stock.Reserve(1);   // insufficient stock — Failure
-    var r4 = stock.Release(1);
-    var r5 = stock.Adjust(-99);  // over-drain — Failure
-
-    return new
-    {
-        stock.Available,
-        stock.Reserved,
-        results = new[]
-        {
-            new { call = "Reserve(2)", r1.IsSuccess, r1.Error },
-            new { call = "Reserve(1)", r2.IsSuccess, r2.Error },
-            new { call = "Reserve(1)", r3.IsSuccess, r3.Error },
-            new { call = "Release(1)", r4.IsSuccess, r4.Error },
-            new { call = "Adjust(-99)", r5.IsSuccess, r5.Error }
-        },
-        events = stock.DomainEvents.Select(e => e.GetType().Name).ToArray()
-    };
+    _ = stock.Reserve(2);
+    _ = stock.Reserve(1);
+    return new { stock.Available, stock.Reserved };
 });
 
 app.Run();
