@@ -1,6 +1,7 @@
 
 using ShopSphere.Domain.Catalog;
 using ShopSphere.Domain.Common;
+using ShopSphere.Domain.Inventory;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,42 +11,32 @@ var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
-app.MapGet("/", () => "ShopSphere API — Day 6 alive!");
+app.MapGet("/", () => "ShopSphere API — Day 7 alive!");
 
-app.MapGet("/_debug/category", (string name) =>
+app.MapGet("/_debug/stock", () =>
 {
-    var category = Category.Create(name);
-    return new
-    {
-        id = category.Id.ToString(),
-        category.Name,
-        slug = category.Slug.Value
-    };
-});
+    var stock = StockLevel.Create(ProductId.New(), initialAvailable: 3);
 
-app.MapGet("/_debug/product", (string title) =>
-{
-    var category = Category.Create("Demo Category");
-    var product = Product.Create(
-        title: title,
-        description: "Placeholder description.",
-        sku: Sku.From("DEMO-001"),
-        categoryId: category.Id,
-        price: new Money(19.99m, "GBP"));
-
-    product.Publish();
+    var r1 = stock.Reserve(2);
+    var r2 = stock.Reserve(1);   // drives Available to 0 — depletion event
+    var r3 = stock.Reserve(1);   // insufficient stock — Failure
+    var r4 = stock.Release(1);
+    var r5 = stock.Adjust(-99);  // over-drain — Failure
 
     return new
     {
-        id = product.Id.ToString(),
-        product.Title,
-        slug = product.Slug.Value,
-        sku = product.Sku.Value,
-        price = product.Price.ToString(),
-        status = product.Status.ToString(),
-        events = product.DomainEvents.Select(e => e.GetType().Name).ToArray()
+        stock.Available,
+        stock.Reserved,
+        results = new[]
+        {
+            new { call = "Reserve(2)", r1.IsSuccess, r1.Error },
+            new { call = "Reserve(1)", r2.IsSuccess, r2.Error },
+            new { call = "Reserve(1)", r3.IsSuccess, r3.Error },
+            new { call = "Release(1)", r4.IsSuccess, r4.Error },
+            new { call = "Adjust(-99)", r5.IsSuccess, r5.Error }
+        },
+        events = stock.DomainEvents.Select(e => e.GetType().Name).ToArray()
     };
 });
-
 
 app.Run();
