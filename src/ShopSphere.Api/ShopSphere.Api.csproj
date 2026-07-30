@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ShopSphere.ServiceDefaults\ShopSphere.ServiceDefaults.csproj" />
     <ProjectReference Include="..\ShopSphere.Domain\ShopSphere.Domain.csproj" />
+    <ProjectReference Include="..\ShopSphere.Infrastructure\ShopSphere.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
