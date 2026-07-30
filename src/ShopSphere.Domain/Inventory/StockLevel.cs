@@ -40,9 +40,9 @@ public sealed class StockLevel : AggregateRoot<StockLevelId>
     public Result Reserve(int quantity)
     {
         if (quantity <= 0)
-            return Result.Failure("Reserve quantity must be positive.");
+        return Result.Failure(InventoryErrors.QuantityNotPositive("Reserve"));
         if (quantity > Available)
-            return Result.Failure($"Insufficient stock: requested {quantity}, available {Available}.");
+            return Result.Failure(InventoryErrors.InsufficientStock(quantity, Available));
 
         Available -= quantity;
         Reserved += quantity;
@@ -62,9 +62,9 @@ public sealed class StockLevel : AggregateRoot<StockLevelId>
     public Result Release(int quantity)
     {
         if (quantity <= 0)
-            return Result.Failure("Release quantity must be positive.");
+        return Result.Failure(InventoryErrors.QuantityNotPositive("Release"));
         if (quantity > Reserved)
-            return Result.Failure($"Cannot release {quantity} — only {Reserved} reserved.");
+            return Result.Failure(InventoryErrors.InsufficientReserved(quantity, Reserved));
 
         Reserved -= quantity;
         Available += quantity;
@@ -81,7 +81,7 @@ public sealed class StockLevel : AggregateRoot<StockLevelId>
     {
         var newAvailable = Available + delta;
         if (newAvailable < 0)
-            return Result.Failure($"Adjustment would drive Available below zero (was {Available}, delta {delta}).");
+            return Result.Failure(InventoryErrors.AdjustmentBelowZero(Available, delta));
 
         var wasNonZero = Available > 0;
         Available = newAvailable;

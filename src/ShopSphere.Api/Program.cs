@@ -11,7 +11,7 @@ var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
-app.MapGet("/", () => "ShopSphere API — Day 8 alive!");
+app.MapGet("/", () => "ShopSphere API — Day 9 alive!");
 
 app.MapGet("/_debug/money", () =>
 {
@@ -59,9 +59,34 @@ app.MapGet("/_debug/product", (string title) =>
 app.MapGet("/_debug/stock", () =>
 {
     var stock = StockLevel.Create(ProductId.New(), initialAvailable: 3);
-    _ = stock.Reserve(2);
-    _ = stock.Reserve(1);
-    return new { stock.Available, stock.Reserved };
+
+    var r1 = stock.Reserve(2);
+    var r2 = stock.Reserve(1);
+    var r3 = stock.Reserve(1);   // insufficient
+    var r4 = stock.Release(1);
+    var r5 = stock.Adjust(-99);  // below zero
+
+    static object Render(string call, Result r) => new
+    {
+        call,
+        r.IsSuccess,
+        error = r.IsSuccess ? null : new { r.Error.Code, r.Error.Message }
+    };
+
+    return new
+    {
+        stock.Available,
+        stock.Reserved,
+        results = new[]
+        {
+            Render("Reserve(2)", r1),
+            Render("Reserve(1)", r2),
+            Render("Reserve(1)", r3),
+            Render("Release(1)", r4),
+            Render("Adjust(-99)", r5)
+        },
+        events = stock.DomainEvents.Select(e => e.GetType().Name).ToArray()
+    };
 });
 
 app.Run();
