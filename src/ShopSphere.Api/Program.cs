@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using ShopSphere.Domain.Catalog;
-using ShopSphere.Domain.Common;
-using ShopSphere.Domain.Inventory;
 using ShopSphere.Infrastructure;
 using ShopSphere.Infrastructure.Persistence;
 
@@ -14,13 +12,29 @@ var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
-app.MapGet("/", () => "ShopSphere API — Day 10 alive!");
+// Migrate + seed BEFORE serving traffic.
+await DatabaseStartup.MigrateAndSeedAsync(app.Services);
 
-// Proves the DbContext resolves from DI and can talk to SQL.
-app.MapGet("/_debug/db-ping", async (ShopSphereDbContext db) =>
-{
-    var canConnect = await db.Database.CanConnectAsync();
-    return new { canConnect };
-});
+app.MapGet("/", () => "ShopSphere API — Day 12 alive!");
+
+app.MapGet("/_debug/categories", async (ShopSphereDbContext db) =>
+    await db.Categories
+        .AsNoTracking()
+        .Select(c => new { c.Id, c.Name, Slug = c.Slug.Value })
+        .ToListAsync());
+
+app.MapGet("/_debug/products", async (ShopSphereDbContext db) =>
+    await db.Products
+        .AsNoTracking()
+        .Select(p => new
+        {
+            p.Id,
+            p.Title,
+            Slug = p.Slug.Value,
+            Sku = p.Sku.Value,
+            Price = p.Price.Amount + " " + p.Price.Currency,
+            Status = p.Status.ToString()
+        })
+        .ToListAsync());
 
 app.Run();
