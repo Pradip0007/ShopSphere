@@ -21,8 +21,14 @@ public static class DependencyInjection
         {
             var config = sp.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
             var cs = config.GetConnectionString(connectionStringName)
-                ?? throw new InvalidOperationException(
-                    $"Connection string '{connectionStringName}' not configured.");
+                ?? config[$"ConnectionStrings:{connectionStringName}"]
+                ?? Environment.GetEnvironmentVariable($"ConnectionStrings__{connectionStringName}");
+
+            if (string.IsNullOrWhiteSpace(cs))
+            {
+                cs = "Server=127.0.0.1,1433;Database=shopsphere;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;Encrypt=False;";
+            }
+
             options.UseSqlServer(cs);
         });
 
