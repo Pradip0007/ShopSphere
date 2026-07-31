@@ -13,8 +13,7 @@ public sealed class ShopSphereDbContext(DbContextOptions<ShopSphereDbContext> op
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Day 11 fills this in with IEntityTypeConfiguration classes
-        // discovered from this assembly.
         base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ShopSphereDbContext).Assembly);
     }
 }
