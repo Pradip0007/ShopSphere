@@ -1,10 +1,11 @@
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using ShopSphere.Api.HealthChecks;
 using ShopSphere.Domain.Catalog;
 using ShopSphere.Infrastructure;
 using ShopSphere.Infrastructure.Persistence;
 
-// Bootstrap logger — used only during startup, then replaced.
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateBootstrapLogger();
@@ -15,40 +16,47 @@ try
 
     builder.AddServiceDefaults();
 
-    builder.Host.UseSerilog(
-    (ctx, services, cfg) => cfg
+    builder.Host.UseSerilog((ctx, services, cfg) => cfg
         .ReadFrom.Configuration(ctx.Configuration)
         .ReadFrom.Services(services)
         .Enrich.FromLogContext()
         .Enrich.WithMachineName()
         .Enrich.WithThreadId()
         .Enrich.WithProperty("Application", "ShopSphere.Api")
-        .WriteTo.Console(
-            outputTemplate:
-                "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} <{SourceContext}> {Properties:j}{NewLine}{Exception}"),
-    writeToProviders: true);
+        .WriteTo.Console(outputTemplate:
+            "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} " +
+            "<{SourceContext}> {Properties:j}{NewLine}{Exception}"));
 
     builder.Services.AddInfrastructure();
 
     var app = builder.Build();
 
-    app.UseSerilogRequestLogging(); // one clean line per HTTP request
-
+    app.UseSerilogRequestLogging();
     app.MapDefaultEndpoints();
+
+    app.MapHealthChecks("/health/live", new HealthCheckOptions
+    {
+        Predicate = _ => false,
+        ResponseWriter = JsonHealthCheckWriter.WriteAsync
+    });
+
+    app.MapHealthChecks("/health/ready", new HealthCheckOptions
+    {
+        Predicate = r => r.Tags.Contains("ready"),
+        ResponseWriter = JsonHealthCheckWriter.WriteAsync
+    });
 
     await DatabaseStartup.MigrateAndSeedAsync(app.Services);
 
-    app.MapGet("/", () => "ShopSphere API — Day 14 alive!");
+    app.MapGet("/", () => "ShopSphere API — Day 15 alive!");
 
     app.MapGet("/_debug/categories", async (ShopSphereDbContext db) =>
-        await db.Categories
-            .AsNoTracking()
+        await db.Categories.AsNoTracking()
             .Select(c => new { c.Id, c.Name, Slug = c.Slug.Value })
             .ToListAsync());
 
     app.MapGet("/_debug/products", async (ShopSphereDbContext db) =>
-        await db.Products
-            .AsNoTracking()
+        await db.Products.AsNoTracking()
             .Select(p => new
             {
                 p.Id,
@@ -59,13 +67,6 @@ try
                 Status = p.Status.ToString()
             })
             .ToListAsync());
-
-    // Demonstrates structured logging — note the {Sku} placeholder.
-    app.MapGet("/_debug/log", (ILogger<Program> logger, string? sku) =>
-    {
-        logger.LogInformation("Debug log ping for {Sku}", sku ?? "UNKNOWN");
-        return Results.Ok(new { logged = true });
-    });
 
     app.Run();
 }
