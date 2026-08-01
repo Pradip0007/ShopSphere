@@ -8,11 +8,6 @@ namespace ShopSphere.Infrastructure;
 
 public static class DependencyInjection
 {
-    /// <summary>
-    /// Registers the DbContext and any other infra services.
-    /// Connection string is resolved via Aspire's service discovery — the
-    /// AppHost injects it as configuration key "ConnectionStrings:shopsphere".
-    /// </summary>
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
         string connectionStringName = "shopsphere")
@@ -34,6 +29,13 @@ public static class DependencyInjection
 
         // Day 21 replaces this with the MediatR-backed dispatcher.
         services.AddSingleton<IDomainEventDispatcher, NullDomainEventDispatcher>();
+
+        // Readiness check — SQL reachable + schema present.
+        services
+            .AddHealthChecks()
+            .AddDbContextCheck<ShopSphereDbContext>(
+                name: "sql",
+                tags: ["ready"]);
 
         return services;
     }
