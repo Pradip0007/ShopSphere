@@ -1,40 +1,79 @@
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using ShopSphere.Domain.Catalog;
 using ShopSphere.Infrastructure;
 using ShopSphere.Infrastructure.Persistence;
 
-var builder = WebApplication.CreateBuilder(args);
+// Bootstrap logger — used only during startup, then replaced.
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
-builder.AddServiceDefaults();
-builder.Services.AddInfrastructure();
+try
+{
+    var builder = WebApplication.CreateBuilder(args);
 
-var app = builder.Build();
+    builder.AddServiceDefaults();
 
-app.MapDefaultEndpoints();
+    builder.Host.UseSerilog(
+    (ctx, services, cfg) => cfg
+        .ReadFrom.Configuration(ctx.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .Enrich.WithMachineName()
+        .Enrich.WithThreadId()
+        .Enrich.WithProperty("Application", "ShopSphere.Api")
+        .WriteTo.Console(
+            outputTemplate:
+                "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} <{SourceContext}> {Properties:j}{NewLine}{Exception}"),
+    writeToProviders: true);
 
-// Migrate + seed BEFORE serving traffic.
-await DatabaseStartup.MigrateAndSeedAsync(app.Services);
+    builder.Services.AddInfrastructure();
 
-app.MapGet("/", () => "ShopSphere API — Day 12 alive!");
+    var app = builder.Build();
 
-app.MapGet("/_debug/categories", async (ShopSphereDbContext db) =>
-    await db.Categories
-        .AsNoTracking()
-        .Select(c => new { c.Id, c.Name, Slug = c.Slug.Value })
-        .ToListAsync());
+    app.UseSerilogRequestLogging(); // one clean line per HTTP request
 
-app.MapGet("/_debug/products", async (ShopSphereDbContext db) =>
-    await db.Products
-        .AsNoTracking()
-        .Select(p => new
-        {
-            p.Id,
-            p.Title,
-            Slug = p.Slug.Value,
-            Sku = p.Sku.Value,
-            Price = p.Price.Amount + " " + p.Price.Currency,
-            Status = p.Status.ToString()
-        })
-        .ToListAsync());
+    app.MapDefaultEndpoints();
 
-app.Run();
+    await DatabaseStartup.MigrateAndSeedAsync(app.Services);
+
+    app.MapGet("/", () => "ShopSphere API — Day 14 alive!");
+
+    app.MapGet("/_debug/categories", async (ShopSphereDbContext db) =>
+        await db.Categories
+            .AsNoTracking()
+            .Select(c => new { c.Id, c.Name, Slug = c.Slug.Value })
+            .ToListAsync());
+
+    app.MapGet("/_debug/products", async (ShopSphereDbContext db) =>
+        await db.Products
+            .AsNoTracking()
+            .Select(p => new
+            {
+                p.Id,
+                p.Title,
+                Slug = p.Slug.Value,
+                Sku = p.Sku.Value,
+                Price = p.Price.Amount + " " + p.Price.Currency,
+                Status = p.Status.ToString()
+            })
+            .ToListAsync());
+
+    // Demonstrates structured logging — note the {Sku} placeholder.
+    app.MapGet("/_debug/log", (ILogger<Program> logger, string? sku) =>
+    {
+        logger.LogInformation("Debug log ping for {Sku}", sku ?? "UNKNOWN");
+        return Results.Ok(new { logged = true });
+    });
+
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "ShopSphere.Api terminated unexpectedly during startup.");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

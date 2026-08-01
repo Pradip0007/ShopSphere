@@ -68,7 +68,15 @@ public static class DevDataSeeder
         await db.SaveChangesAsync(ct);
 
         logger.LogInformation(
-            "DevDataSeeder: seeded {CategoryCount} categories, {ProductCount} products, {StockCount} stock rows.",
-            3, products.Length, products.Length);
+        "DevDataSeeder: seeded {CategoryCount} categories, {ProductCount} products, {StockCount} stock rows.",
+        3, products.Length, products.Length);
+
+        // NEW — one entry per product with rich context:
+        foreach (var p in products)
+        {
+            logger.LogInformation(
+                "Seeded product {Sku} ('{Title}') priced {Price} — status {Status}",
+                p.Sku.Value, p.Title, p.Price.ToString(), p.Status);
+        }
     }
 }
