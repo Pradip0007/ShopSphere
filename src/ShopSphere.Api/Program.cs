@@ -1,20 +1,26 @@
 using System.Reflection;
 using ShopSphere.Api.Infrastructure;
+using ShopSphere.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-// NEW: scans this assembly for every IEndpoint and registers them.
-builder.Services.AddEndpoints(Assembly.GetExecutingAssembly());
+builder.Services.AddInfrastructure();   // <-- ADD THIS
+
+Assembly apiAssembly = Assembly.GetExecutingAssembly();
+
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(apiAssembly));
+
+builder.Services.AddEndpoints(apiAssembly);
 
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
-app.MapGet("/", () => "ShopSphere API — Day 16 alive!");
+app.MapGet("/", () => "ShopSphere API — Day 17 alive!");
 
-// NEW: invokes MapEndpoint on every registered IEndpoint.
 app.MapEndpoints();
 
 app.Run();
