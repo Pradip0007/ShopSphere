@@ -3,6 +3,7 @@ using FluentValidation;
 using MediatR;
 using ShopSphere.Api.Behaviors;
 using ShopSphere.Api.Infrastructure;
+using ShopSphere.Api.Middleware;
 using ShopSphere.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,21 +17,23 @@ Assembly apiAssembly = Assembly.GetExecutingAssembly();
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(apiAssembly);
-
-    // Outer first. Log wraps Validate wraps Handler.
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 
-// Scans and registers every IValidator<T> as scoped.
 builder.Services.AddValidatorsFromAssembly(apiAssembly);
-
 builder.Services.AddEndpoints(apiAssembly);
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 app.MapDefaultEndpoints();
 
-app.MapGet("/", () => "ShopSphere API — Day 18 alive!");
+app.MapGet("/", () => "ShopSphere API — Day 19 alive!");
 
 app.MapEndpoints();
 
