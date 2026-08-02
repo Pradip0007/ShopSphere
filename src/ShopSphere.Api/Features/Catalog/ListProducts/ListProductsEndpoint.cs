@@ -18,6 +18,9 @@ public sealed class ListProductsEndpoint : IEndpoint
                 return Results.Ok(result);
             })
             .WithName("ListProducts")
-            .WithFeature("Catalog");
+            .WithFeature("Catalog")
+            .WithSummary("List products")
+            .WithDescription("Returns a paged list of active products, ordered by title.")
+            .Produces<PagedResult<ProductListItem>>(StatusCodes.Status200OK);
     }
 }

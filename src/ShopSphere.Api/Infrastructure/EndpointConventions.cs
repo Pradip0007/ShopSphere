@@ -1,11 +1,16 @@
+using Microsoft.AspNetCore.Http;
 namespace ShopSphere.Api.Infrastructure;
 
 public static class EndpointConventions
 {
     /// <summary>
-    /// Common conventions applied to every feature endpoint.
-    /// Extend on Day 20 with OpenAPI metadata; on Day 21 with versioning.
+    /// Applies the feature tag and the standard ProblemDetails response docs
+    /// that every endpoint in this API can produce (from the global handler).
     /// </summary>
     public static RouteHandlerBuilder WithFeature(this RouteHandlerBuilder builder, string tag)
-        => builder.WithTags(tag);
+        => builder
+            .WithTags(tag)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 }
