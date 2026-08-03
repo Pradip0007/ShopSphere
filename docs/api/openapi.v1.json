@@ -17,7 +17,7 @@
           "Catalog"
         ],
         "summary": "List products",
-        "description": "Returns a paged list of active products, ordered by title.",
+        "description": "Returns a paged list of products with optional filtering by category, price range, and sort order.",
         "operationId": "ListProducts",
         "parameters": [
           {
@@ -42,6 +42,45 @@
                 "string"
               ],
               "format": "int32"
+            }
+          },
+          {
+            "name": "categoryId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "minPrice",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+              "type": [
+                "number",
+                "string"
+              ],
+              "format": "double"
+            }
+          },
+          {
+            "name": "maxPrice",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+              "type": [
+                "number",
+                "string"
+              ],
+              "format": "double"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -204,7 +243,9 @@
           "slug",
           "price",
           "currency",
-          "stockOnHand"
+          "stockOnHand",
+          "categoryId",
+          "categoryName"
         ],
         "type": "object",
         "properties": {
@@ -236,6 +277,13 @@
               "string"
             ],
             "format": "int32"
+          },
+          "categoryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "categoryName": {
+            "type": "string"
           }
         }
       }
