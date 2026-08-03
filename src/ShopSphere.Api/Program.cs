@@ -1,6 +1,8 @@
 using System.Reflection;
 using FluentValidation;
 using MediatR;
+using Asp.Versioning;
+using Asp.Versioning.Builder;
 using Scalar.AspNetCore;
 using ShopSphere.Api.Behaviors;
 using ShopSphere.Api.Infrastructure;
@@ -42,11 +44,25 @@ builder.Services.AddOpenApi("v1", options =>
         {
             Title = "ShopSphere API",
             Version = "v1",
-            Description = "Enterprise e-commerce platform — REST endpoints for catalog, orders, checkout.",
+            Description = "Enterprise e-commerce platform.",
         };
         return Task.CompletedTask;
     });
 });
+
+builder.Services
+    .AddApiVersioning(options =>
+    {
+        options.DefaultApiVersion = new ApiVersion(1);
+        options.AssumeDefaultVersionWhenUnspecified = true;
+        options.ReportApiVersions = true;
+        options.ApiVersionReader = new UrlSegmentApiVersionReader();
+    })
+    .AddApiExplorer(options =>
+    {
+        options.GroupNameFormat = "'v'V";
+        options.SubstituteApiVersionInUrl = true;
+    });
 
 var app = builder.Build();
 
@@ -56,17 +72,25 @@ app.MapDefaultEndpoints();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();          // exposes GET /openapi/v1.json
+    app.MapOpenApi();
     app.MapScalarApiReference(options =>
     {
         options.Title = "ShopSphere API";
         options.Theme = ScalarTheme.Purple;
     });
-    // Now available at /scalar/v1
 }
 
-app.MapGet("/", () => "ShopSphere API — Day 20 alive!");
+app.MapGet("/", () => Results.Redirect("/scalar/v1"));
 
-app.MapEndpoints();
+ApiVersionSet apiVersionSet = app.NewApiVersionSet()
+    .HasApiVersion(new ApiVersion(1))
+    .ReportApiVersions()
+    .Build();
+
+RouteGroupBuilder versionedGroup = app
+    .MapGroup("/api/v{version:apiVersion}")
+    .WithApiVersionSet(apiVersionSet);
+
+app.MapEndpoints(versionedGroup);
 
 app.Run();
