@@ -6,6 +6,9 @@ namespace ShopSphere.Domain.Catalog;
 /// <summary>
 /// A sellable item. State transitions: Draft → Published → Archived.
 /// Only Draft can be Published. Only Published can be Archived.
+/// Search: Title + Description are matched by SearchProductsHandler using
+/// SQL LIKE. Day 85 introduces a ProductEmbedding sibling entity and a
+/// hybrid search combining this table with vector similarity.
 /// </summary>
 public sealed class Product : AggregateRoot<ProductId>
 {
