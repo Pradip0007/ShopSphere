@@ -10,3 +10,5 @@
 ## Issues I hit and how I fixed them
 
 (free-form — write anything that surprised you or broke)
+
+//curl -k -o docs/api/openapi.v1.json https://localhost:7583/openapi/v1.json
