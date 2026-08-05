@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using ShopSphere.Api.Middleware;
 using ShopSphere.Domain.Catalog;
 using ShopSphere.Domain.Common;
+using ShopSphere.Domain.Inventory;
 using ShopSphere.Infrastructure.Persistence;
 
 namespace ShopSphere.Api.Features.Admin.CreateProduct;
@@ -12,42 +13,33 @@ public sealed class CreateProductHandler(ShopSphereDbContext db)
 {
     public async Task<CreateProductResponse> Handle(
         CreateProductCommand request,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
-        Category? category = await db.Categories
-            .FirstOrDefaultAsync(
-                c => c.Id.Value == request.CategoryId,
-                cancellationToken)
-            ?? throw new KeyNotFoundException(
-            $"Category {request.CategoryId} not found.");
+        CategoryId categoryId = new (request.CategoryId);
+        bool categoryExists = await db.Categories
+                                .AnyAsync(c => c.Id == categoryId, ct);
+        if (!categoryExists)
+            throw new KeyNotFoundException($"Category {request.CategoryId} not found.");
 
-            bool slugTaken = await db.Products
-            .AnyAsync(
-                p => p.Slug.Value == request.Slug,
-                cancellationToken);
-
-        if (slugTaken)
-        {
-            throw new ConflictException(
-                $"Slug '{request.Slug}' is already in use.");
-        }
+        bool skuTaken = await db.Products
+                        .AnyAsync(p => p.Sku == Sku.From(request.Sku),ct);
+        if(skuTaken)
+            throw new ConflictException($"SKU '{request.Sku}' is already in use.");
 
         Product product = Product.Create(
             title: request.Title,
             description: request.Description,
-            sku: Sku.From(Guid.NewGuid().ToString("N")[..12].ToUpperInvariant()),
-            categoryId: category.Id,
-            price: new Money(request.Price, request.Currency),
-            slug: Slug.From(request.Slug));
+            sku: Sku.From(request.Sku),
+            categoryId: categoryId,
+            price: new Money(request.Price, request.Currency));
+        
+        StockLevel stock = StockLevel.Create(product.Id, request.InitialStock);
 
         db.Products.Add(product);
 
-        db.StockLevels.Add(
-            ShopSphere.Domain.Inventory.StockLevel.Create(
-                product.Id,
-                request.StockOnHand));
+        db.StockLevels.Add(stock);
 
-        await db.SaveChangesAsync(cancellationToken);
+        await db.SaveChangesAsync(ct);
 
         return new CreateProductResponse(product.Id.Value);
     }

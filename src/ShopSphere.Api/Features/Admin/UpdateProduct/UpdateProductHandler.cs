@@ -11,22 +11,17 @@ public sealed class UpdateProductHandler(ShopSphereDbContext db)
 {
     public async Task Handle(
         UpdateProductCommand request,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
-        Product product = await db.Products
-            .FirstOrDefaultAsync(
-                p => p.Id.Value == request.Id,
-                cancellationToken)
+        ProductId id  = new (request.Id);
+        Product product = await db.Products.FirstOrDefaultAsync(
+                p => p.Id == id,ct)
             ?? throw new KeyNotFoundException(
                 $"Product {request.Id} not found.");
 
-        if (request.Title is not null || request.Slug is not null)
+        if (request.Title is not null)
         {
-            product.Rename(
-                request.Title ?? product.Title,
-                request.Slug is null
-                    ? product.Slug
-                    : Slug.From(request.Slug));
+            product.Rename(request.Title);
         }
 
         if (request.Description is not null)
@@ -40,25 +35,6 @@ public sealed class UpdateProductHandler(ShopSphereDbContext db)
                 new Money(request.Price.Value, request.Currency));
         }
 
-        if (request.StockOnHand.HasValue)
-        {
-            var stock = await db.StockLevels
-                .FirstOrDefaultAsync(
-                    s => s.ProductId == product.Id,
-                    cancellationToken)
-                ?? throw new KeyNotFoundException(
-                    $"Stock for product {request.Id} not found.");
-
-            int delta = request.StockOnHand.Value - stock.Available;
-
-            Result result = stock.Adjust(delta);
-
-            if (result.IsFailure)
-            {
-                throw new InvalidOperationException(result.Error.Message);
-            }
-        }
-
-        await db.SaveChangesAsync(cancellationToken);
+        await db.SaveChangesAsync(ct);
     }
 }

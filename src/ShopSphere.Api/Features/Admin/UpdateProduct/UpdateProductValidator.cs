@@ -11,9 +11,6 @@ public sealed class UpdateProductValidator : AbstractValidator<UpdateProductComm
         When(c => c.Title is not null, () =>
             RuleFor(c => c.Title!).NotEmpty().MaximumLength(200));
 
-        When(c => c.Slug is not null, () =>
-            RuleFor(c => c.Slug!).Matches("^[a-z0-9]+(-[a-z0-9]+)*$"));
-
         When(c => c.Description is not null, () =>
             RuleFor(c => c.Description!).MaximumLength(4000));
 
@@ -22,9 +19,6 @@ public sealed class UpdateProductValidator : AbstractValidator<UpdateProductComm
 
         When(c => c.Currency is not null, () =>
             RuleFor(c => c.Currency!).Length(3));
-
-        When(c => c.StockOnHand.HasValue, () =>
-            RuleFor(c => c.StockOnHand!.Value).GreaterThanOrEqualTo(0));
 
         RuleFor(c => c)
             .Must(c => c.Price.HasValue == c.Currency is not null)

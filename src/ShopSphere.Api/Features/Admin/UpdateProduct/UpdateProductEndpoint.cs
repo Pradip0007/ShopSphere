@@ -6,11 +6,9 @@ namespace ShopSphere.Api.Features.Admin.UpdateProduct;
 
 public sealed record UpdateProductBody(
     string? Title,
-    string? Slug,
     string? Description,
     decimal? Price,
-    string? Currency,
-    int? StockOnHand);
+    string? Currency);
 
 public sealed class UpdateProductEndpoint : IEndpoint
 {
@@ -25,11 +23,9 @@ public sealed class UpdateProductEndpoint : IEndpoint
                 UpdateProductCommand command = new(
                     id,
                     body.Title,
-                    body.Slug,
                     body.Description,
                     body.Price,
-                    body.Currency,
-                    body.StockOnHand);
+                    body.Currency);
 
                 await sender.Send(command, ct);
                 return Results.NoContent();

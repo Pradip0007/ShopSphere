@@ -4,11 +4,11 @@ namespace ShopSphere.Api.Features.Admin.CreateProduct;
 
 public sealed record CreateProductCommand(
     string Title,
-    string Slug,
+    string Sku,
     string Description,
     decimal Price,
     string Currency,
-    int StockOnHand,
+    int InitialStock,
     Guid CategoryId)
     : IRequest<CreateProductResponse>;
 

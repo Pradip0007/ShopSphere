@@ -11,76 +11,57 @@ public sealed class ListProductsHandler(ShopSphereDbContext db)
 {
     public async Task<PagedResult<ProductListItem>> Handle(
         ListProductsQuery request,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
-        var query =
-            from p in db.Products.AsNoTracking()
-            join s in db.StockLevels.AsNoTracking()
-                on p.Id equals s.ProductId
-            join c in db.Categories.AsNoTracking()
-                on p.CategoryId equals c.Id
-            where p.Status != ProductStatus.Archived
-            select new
-            {
-                Product = p,
-                Stock = s,
-                Category = c
-            };
+
+        IQueryable<Product> query = db.Products.AsNoTracking()
+                                    .Where(p=>p.Status == ProductStatus.Published);
 
         // Category filter
         if (request.CategoryId is Guid categoryId)
         {
-            query = query.Where(x => x.Product.CategoryId.Value == categoryId);
+            query = query.Where(p => p.CategoryId == new CategoryId(categoryId));
         }
 
         // Minimum price filter
-        if (request.MinPrice is decimal minPrice)
+        if (request.MinPrice is decimal min)
         {
-            query = query.Where(x => x.Product.Price.Amount >= minPrice);
+            query = query.Where(p => p.Price.Amount >= min);
         }
 
         // Maximum price filter
-        if (request.MaxPrice is decimal maxPrice)
+        if (request.MaxPrice is decimal max)
         {
-            query = query.Where(x => x.Product.Price.Amount <= maxPrice);
+            query = query.Where(p => p.Price.Amount <= max);
         }
 
         // Sorting
         query = request.Sort switch
         {
-            ListProductsSort.PriceAsc =>
-                query.OrderBy(x => x.Product.Price.Amount),
-
-            ListProductsSort.PriceDesc =>
-                query.OrderByDescending(x => x.Product.Price.Amount),
-
-            ListProductsSort.Name =>
-                query.OrderBy(x => x.Product.Title),
-
-            _ =>
-                query.OrderBy(x => x.Product.Title),
+            "price_asc" => query.OrderBy(p => p.Price.Amount),
+            "price_desc" => query.OrderByDescending(p => p.Price.Amount),
+            _            => query.OrderBy(p => p.Title)
         };
 
-        int totalCount = await query.CountAsync(cancellationToken);
+        int total = await query.CountAsync(ct);
 
         List<ProductListItem> items = await query
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
-            .Select(x => new ProductListItem(
-                x.Product.Id.Value,
-                x.Product.Title,
-                x.Product.Slug.Value,
-                x.Product.Price.Amount,
-                x.Product.Price.Currency,
-                x.Stock.Available,
-                x.Product.CategoryId.Value,
-                x.Category.Name))
-            .ToListAsync(cancellationToken);
+            .Select(p => new ProductListItem(
+                p.Id.Value,
+                p.Title,
+                p.Slug.Value,
+                p.Sku.Value,
+                p.Price.Amount,
+                p.Price.Currency,
+                p.CategoryId.Value))
+            .ToListAsync(ct);
 
         return new PagedResult<ProductListItem>(
             items,
             request.Page,
             request.PageSize,
-            totalCount);
+            total);
     }
 }

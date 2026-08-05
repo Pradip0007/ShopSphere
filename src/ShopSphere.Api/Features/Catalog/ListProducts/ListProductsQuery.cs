@@ -16,8 +16,7 @@ public sealed record ProductListItem(
     Guid Id,
     string Title,
     string Slug,
+    string Sku,
     decimal Price,
     string Currency,
-    int StockOnHand,
-    Guid CategoryId,
-    string CategoryName);
+    Guid CategoryId);
