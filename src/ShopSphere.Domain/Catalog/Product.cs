@@ -67,10 +67,43 @@ public sealed class Product : AggregateRoot<ProductId>
         return new Product(id, title.Trim(), description, resolvedSlug, sku, categoryId, price);
     }
 
-    public void UpdateDescription(string newDescription)
+    public void Rename(string title, Slug? slug = null)
     {
-        ArgumentNullException.ThrowIfNull(newDescription);
-        Description = newDescription;
+        ArgumentException.ThrowIfNullOrWhiteSpace(title);
+
+        if (title.Length > 200)
+            throw new ArgumentException(
+                "Title must be 200 characters or fewer.",
+                nameof(title));
+
+        Title = title.Trim();
+        Slug = slug ?? Slug.FromName(title);
+
+        // TODO: Raise ProductRenamedEvent
+    }
+
+    public void ChangePrice(Money newPrice)
+    {
+        ArgumentNullException.ThrowIfNull(newPrice);
+
+        if (newPrice.Amount < 0)
+            throw new ArgumentException(
+                "Price cannot be negative.",
+                nameof(newPrice));
+
+        Price = newPrice;
+
+        // TODO: Raise ProductPriceChangedEvent
+    }
+
+    public void UpdateDescription(string description)
+    {
+        ArgumentNullException.ThrowIfNull(description);
+        if (description.Length > 4000)
+        {
+            throw new ArgumentException("Description exceeds 4000 characters.", nameof(description));
+        }
+        Description = description;
     }
 
     public void Publish()
@@ -88,5 +121,16 @@ public sealed class Product : AggregateRoot<ProductId>
             throw new InvalidOperationException($"Only Published products can be archived (was {Status}).");
 
         Status = ProductStatus.Archived;
+    }
+
+    public void Unarchive()
+    {
+        if (Status != ProductStatus.Archived)
+            throw new InvalidOperationException(
+                $"Only Archived products can be unarchived (was {Status}).");
+
+        Status = ProductStatus.Draft;
+
+        // TODO: Raise ProductUnarchivedEvent
     }
 }
