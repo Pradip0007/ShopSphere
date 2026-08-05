@@ -26,9 +26,9 @@ public static class DevDataSeeder
         logger.LogInformation("DevDataSeeder: seeding baseline data…");
 
         // --- Categories ------------------------------------------------------
-        var electronics = Category.Create("Electronics");
-        var books = Category.Create("Books");
-        var clothing = Category.Create("Clothing");
+        Category electronics = Category.Create("Electronics");
+        Category books = Category.Create("Books");
+        Category clothing = Category.Create("Clothing");
 
         db.Categories.AddRange(electronics, books, clothing);
 
@@ -53,7 +53,7 @@ public static class DevDataSeeder
         };
 
         // Publish half of them so lists have something to show.
-        foreach (var p in products.Take(4))
+        foreach (Product p in products)
             p.Publish();
 
         db.Products.AddRange(products);

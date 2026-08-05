@@ -25,44 +25,30 @@ public sealed class SearchProductsHandler(ShopSphereDbContext db)
 
         string pattern = $"%{term}%";
 
-        var query =
-            from p in db.Products.AsNoTracking()
-            join s in db.StockLevels.AsNoTracking()
-                on p.Id equals s.ProductId
-            join c in db.Categories.AsNoTracking()
-                on p.CategoryId equals c.Id
-            where p.Status != ProductStatus.Archived
-            where EF.Functions.Like(p.Title, pattern)
-               || EF.Functions.Like(p.Description, pattern)
-            orderby EF.Functions.Like(p.Title, pattern) descending,
-                    p.Title
-            select new
-            {
-                Product = p,
-                Stock = s,
-                Category = c
-            };
+        IQueryable<Product> query = db.Products
+            .AsNoTracking()
+            .Where(p => p.Status == ProductStatus.Published)
+            .Where(p => EF.Functions.Like(p.Title, pattern)
+                     || EF.Functions.Like(p.Description, pattern))
+            // Naive scoring: Title matches float to the top.
+            .OrderByDescending(p => EF.Functions.Like(p.Title, pattern) ? 1 : 0)
+            .ThenBy(p => p.Title);
 
         int totalCount = await query.CountAsync(cancellationToken);
 
         List<ProductListItem> items = await query
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
-            .Select(x => new ProductListItem(
-                x.Product.Id.Value,
-                x.Product.Title,
-                x.Product.Slug.Value,
-                x.Product.Price.Amount,
-                x.Product.Price.Currency,
-                x.Stock.Available,
-                x.Product.CategoryId.Value,
-                x.Category.Name))
+            .Select(p => new ProductListItem(
+                p.Id.Value,
+                p.Title,
+                p.Slug.Value,
+                p.Sku.Value,
+                p.Price.Amount,
+                p.Price.Currency,
+                p.CategoryId.Value))
             .ToListAsync(cancellationToken);
 
-        return new PagedResult<ProductListItem>(
-            items,
-            request.Page,
-            request.PageSize,
-            totalCount);
+        return new PagedResult<ProductListItem>(items, request.Page, request.PageSize, totalCount);
     }
 }
