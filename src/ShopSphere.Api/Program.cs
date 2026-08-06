@@ -9,6 +9,10 @@ using ShopSphere.Api.Infrastructure;
 using ShopSphere.Api.Middleware;
 using ShopSphere.Infrastructure;
 using ShopSphere.Api.Auth;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +31,45 @@ builder.Services.AddMediatR(cfg =>
 
 builder.Services.AddValidatorsFromAssembly(apiAssembly);
 builder.Services.AddEndpoints(apiAssembly);
-builder.Services.AddSingleton<ITokenService, PlaceholderTokenService>();
+
+builder.Services
+    .AddOptions<JwtOptions>()
+    .Bind(builder.Configuration.GetSection(JwtOptions.SectionName))
+    .ValidateDataAnnotations()
+    .Validate(o => o.Key.Length >= 32, "Jwt:Key must be at least 32 characters.")
+    .ValidateOnStart();
+
+// Replace the placeholder registered on Day 26.
+builder.Services.AddSingleton<ITokenService, JwtTokenService>();
+builder.Services.AddSingleton(TimeProvider.System);
+
+JwtOptions jwt = builder.Configuration
+    .GetSection(JwtOptions.SectionName)
+    .Get<JwtOptions>() ?? throw new InvalidOperationException("Jwt options missing.");
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+        options.SaveToken = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwt.Issuer,
+
+            ValidateAudience = true,
+            ValidAudience = jwt.Audience,
+
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key)),
+
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(30),
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails(options =>
@@ -48,6 +90,7 @@ builder.Services.AddOpenApi("v1", options =>
             Version = "v1",
             Description = "Enterprise e-commerce platform.",
         };
+
         return Task.CompletedTask;
     });
 });
@@ -92,6 +135,9 @@ ApiVersionSet apiVersionSet = app.NewApiVersionSet()
 RouteGroupBuilder versionedGroup = app
     .MapGroup("/api/v{version:apiVersion}")
     .WithApiVersionSet(apiVersionSet);
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapEndpoints(versionedGroup);
 
