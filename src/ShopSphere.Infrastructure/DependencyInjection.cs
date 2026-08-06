@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ShopSphere.Domain.Common;
 using ShopSphere.Infrastructure.Persistence;
+using ShopSphere.Domain.Users;
+using ShopSphere.Infrastructure.Security;
 
 namespace ShopSphere.Infrastructure;
 
@@ -26,6 +28,8 @@ public static class DependencyInjection
 
             options.UseSqlServer(cs);
         });
+
+        services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
 
         // Day 21 replaces this with the MediatR-backed dispatcher.
         services.AddSingleton<IDomainEventDispatcher, NullDomainEventDispatcher>();
