@@ -8,4 +8,5 @@ public sealed class JwtOptions
     public string Audience { get; init; } = default!;
     public string Key { get; init; } = default!;
     public int AccessTokenLifetimeMinutes { get; init; } = 15;
+    public int RefreshTokenLifetimeDays { get; init; } = 14;
 }

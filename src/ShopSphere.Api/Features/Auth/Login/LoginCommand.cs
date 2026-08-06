@@ -8,4 +8,6 @@ public sealed record LoginCommand(string Email, string Password)
 public sealed record LoginResponse(
     string AccessToken,
     DateTimeOffset ExpiresAt,
+    string RefreshToken,
+    DateTimeOffset RefreshExpiresAt,
     string TokenType = "Bearer");

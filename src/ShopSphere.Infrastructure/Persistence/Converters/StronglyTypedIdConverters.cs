@@ -23,4 +23,7 @@ internal static class StronglyTypedIdConverters
 
     public static ValueConverter<UserId, Guid> UserId { get; } =
         new(id => id.Value, value => new UserId(value));
+    
+    public static ValueConverter<RefreshTokenId, Guid> RefreshTokenId { get; } =
+        new(id => id.Value,value => new RefreshTokenId(value));
 }
