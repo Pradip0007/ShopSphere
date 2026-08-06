@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShopSphere.Domain.Catalog;
 using ShopSphere.Domain.Inventory;
+using ShopSphere.Domain.Users;
 
 namespace ShopSphere.Infrastructure.Persistence.Converters;
 
@@ -19,4 +20,7 @@ internal static class StronglyTypedIdConverters
 
     public static ValueConverter<StockLevelId, Guid> StockLevelId { get; } =
         new(id => id.Value, value => new StockLevelId(value));
+
+    public static ValueConverter<UserId, Guid> UserId { get; } =
+        new(id => id.Value, value => new UserId(value));
 }

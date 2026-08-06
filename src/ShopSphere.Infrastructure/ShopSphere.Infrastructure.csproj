@@ -13,9 +13,7 @@
     </PackageReference>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="Konscious.Security.Cryptography.Argon2" />
     <ProjectReference Include="..\ShopSphere.Domain\ShopSphere.Domain.csproj" />
   </ItemGroup>
 
