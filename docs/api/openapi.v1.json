@@ -11,6 +11,47 @@
     }
   ],
   "paths": {
+    "/api/v1/me": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Return the current user's identity",
+        "operationId": "GetMe",
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/products/search": {
       "get": {
         "tags": [
@@ -882,10 +923,10 @@
   },
   "tags": [
     {
-      "name": "Catalog"
+      "name": "Auth"
     },
     {
-      "name": "Auth"
+      "name": "Catalog"
     },
     {
       "name": "Admin.Catalog"
