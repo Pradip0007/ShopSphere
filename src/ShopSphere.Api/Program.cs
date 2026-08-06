@@ -8,6 +8,7 @@ using ShopSphere.Api.Behaviors;
 using ShopSphere.Api.Infrastructure;
 using ShopSphere.Api.Middleware;
 using ShopSphere.Infrastructure;
+using ShopSphere.Api.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,7 @@ builder.Services.AddMediatR(cfg =>
 
 builder.Services.AddValidatorsFromAssembly(apiAssembly);
 builder.Services.AddEndpoints(apiAssembly);
+builder.Services.AddSingleton<ITokenService, PlaceholderTokenService>();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails(options =>

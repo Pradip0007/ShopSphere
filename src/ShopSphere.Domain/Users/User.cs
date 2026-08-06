@@ -72,4 +72,11 @@ user.Raise(
 
     [GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.CultureInvariant)]
     private static partial Regex EmailRegex();
+
+    public bool VerifyPassword(string plainPassword, IPasswordHasher hasher)
+    {
+        ArgumentNullException.ThrowIfNull(hasher);
+        if (IsLockedOut) return false;
+        return hasher.Verify(plainPassword ?? string.Empty, PasswordHash);
+    }
 }
