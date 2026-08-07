@@ -29,5 +29,9 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(u => u.RegisteredAt).IsRequired();
         builder.Property(u => u.IsLockedOut).IsRequired();
+
+        builder.HasMany(u => u.Roles)
+                .WithMany()
+                .UsingEntity(j => j.ToTable("UserRoles"));
     }
 }

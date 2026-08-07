@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using ShopSphere.Api.Infrastructure;
+using ShopSphere.Domain.Users;
 
 namespace ShopSphere.Api.Features.Admin.UpdateProduct;
 
@@ -35,7 +36,7 @@ public sealed class UpdateProductEndpoint : IEndpoint
             .WithSummary("Update a product (partial)")
             .WithDescription("Admin-only. Null fields are left unchanged.")
             .Produces(StatusCodes.Status204NoContent)
-            .ProducesProblem(StatusCodes.Status404NotFound);
-        // TODO(Day 29): .RequireAuthorization("products.write");
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .RequireAuthorization(Permissions.ProductsWrite);
     }
 }

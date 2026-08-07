@@ -24,6 +24,11 @@ public sealed class RegisterHandler(
             throw new ConflictException("Registration failed.");
         }
 
+        Role customer = await db.Roles
+            .Include(r => r.Permissions)
+            .FirstOrDefaultAsync(r => r.Name == "customer", cancellationToken)
+            ?? throw new InvalidOperationException("Customer role missing — seed not run?");
+
         User user = User.Register(request.Email, request.Password, hasher);
         db.Users.Add(user);
         await db.SaveChangesAsync(cancellationToken);

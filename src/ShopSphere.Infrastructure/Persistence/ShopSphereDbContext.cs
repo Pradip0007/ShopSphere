@@ -13,6 +13,8 @@ public sealed class ShopSphereDbContext(DbContextOptions<ShopSphereDbContext> op
     public DbSet<StockLevel> StockLevels => Set<StockLevel>();
     public DbSet<User> Users => Set<User>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<Role> Roles => Set<Role>();
+    public DbSet<Permission> Permissions => Set<Permission>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

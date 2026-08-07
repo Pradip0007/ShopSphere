@@ -67,8 +67,10 @@ public sealed class RefreshHandler(
         }
 
         User user = await db.Users
-            .FirstOrDefaultAsync(u => u.Id == existing.UserId, cancellationToken)
-            ?? throw new UnauthorizedAccessException("User not found.");
+        .Include(u => u.Roles)
+            .ThenInclude(r => r.Permissions)
+        .FirstOrDefaultAsync(u => u.Id == existing.UserId, cancellationToken)
+        ?? throw new UnauthorizedAccessException("User not found.");
 
         if (user.IsLockedOut)
         {
