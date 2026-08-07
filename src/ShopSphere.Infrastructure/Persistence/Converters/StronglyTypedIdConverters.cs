@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShopSphere.Domain.Catalog;
+using ShopSphere.Domain.Common;
 using ShopSphere.Domain.Inventory;
 using ShopSphere.Domain.Users;
 
@@ -26,4 +27,14 @@ internal static class StronglyTypedIdConverters
     
     public static ValueConverter<RefreshTokenId, Guid> RefreshTokenId { get; } =
         new(id => id.Value,value => new RefreshTokenId(value));
+
+    public static ValueConverter<RoleId, Guid> RoleId { get; } =
+    new(
+        id => id.Value,
+        value => new RoleId(value));
+
+    public static ValueConverter<PermissionId, Guid> PermissionId { get; } =
+        new(
+            id => id.Value,
+            value => new PermissionId(value));
 }

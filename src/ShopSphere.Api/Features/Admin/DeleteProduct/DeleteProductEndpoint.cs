@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using ShopSphere.Api.Infrastructure;
+using ShopSphere.Domain.Users;
 
 namespace ShopSphere.Api.Features.Admin.DeleteProduct;
 
@@ -21,7 +22,7 @@ public sealed class DeleteProductEndpoint : IEndpoint
             .WithSummary("Archive a product")
             .WithDescription("Admin-only. Soft delete: product row is retained with IsArchived=true.")
             .Produces(StatusCodes.Status204NoContent)
-            .ProducesProblem(StatusCodes.Status404NotFound);
-        // TODO(Day 29): .RequireAuthorization("products.write");
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .RequireAuthorization(Permissions.ProductsWrite);
     }
 }

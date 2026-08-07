@@ -4,9 +4,10 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using ShopSphere.Api.Auth;
 using ShopSphere.Domain.Users;
 
-namespace ShopSphere.Api.Auth;
+namespace ShopSphere.Api.Features.Auth;
 
 public sealed class JwtTokenService(
     IOptions<JwtOptions> options,
@@ -20,29 +21,38 @@ public sealed class JwtTokenService(
         DateTimeOffset now = timeProvider.GetUtcNow();
         DateTimeOffset expires = now.AddMinutes(_options.AccessTokenLifetimeMinutes);
 
-        Claim[] claims =
+        List<Claim> claims =
         [
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.Value.ToString("D")),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
-            new Claim(JwtRegisteredClaimNames.Iat,
+            new Claim(
+                JwtRegisteredClaimNames.Iat,
                 now.ToUnixTimeSeconds().ToString(System.Globalization.CultureInfo.InvariantCulture),
                 ClaimValueTypes.Integer64),
         ];
+        foreach (Role role in user.Roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role.Name));
+        }
+
+        foreach (string permission in user.EffectivePermissions())
+        {
+            claims.Add(new Claim("permission", permission));
+        }
 
         SymmetricSecurityKey signingKey = new(Encoding.UTF8.GetBytes(_options.Key));
         SigningCredentials credentials = new(signingKey, SecurityAlgorithms.HmacSha256);
 
         JwtSecurityToken token = new(
-            issuer: _options.Issuer,
-            audience: _options.Audience,
-            claims: claims,
-            notBefore: now.UtcDateTime,
-            expires: expires.UtcDateTime,
-            signingCredentials: credentials);
+        issuer: _options.Issuer,
+        audience: _options.Audience,
+        claims: claims,
+        notBefore: now.UtcDateTime,
+        expires: expires.UtcDateTime,
+        signingCredentials: credentials);
 
-        string tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-        return new IssuedToken(tokenString, expires);
+        return new IssuedToken(new JwtSecurityTokenHandler().WriteToken(token), expires);
     }
     
     public IssuedRefreshToken IssueRefreshToken()

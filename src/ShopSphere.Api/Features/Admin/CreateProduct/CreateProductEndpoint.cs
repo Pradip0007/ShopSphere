@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using ShopSphere.Api.Infrastructure;
+using ShopSphere.Domain.Users;
 
 namespace ShopSphere.Api.Features.Admin.CreateProduct;
 
@@ -22,7 +23,7 @@ public sealed class CreateProductEndpoint : IEndpoint
             .WithDescription("Admin-only. Creates a new product in the given category. Role gate stubbed today; RBAC lands Day 29.")
             .Produces<CreateProductResponse>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status409Conflict);
-        // TODO(Day 29): .RequireAuthorization("products.write");
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .RequireAuthorization(Permissions.ProductsWrite);
     }
 }

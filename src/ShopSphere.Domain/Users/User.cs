@@ -16,6 +16,10 @@ public sealed partial class User : AggregateRoot<UserId>
     public DateTimeOffset RegisteredAt { get; private set; }
     public bool IsLockedOut { get; private set; }
 
+    private readonly List<Role> _roles = [];
+
+    public IReadOnlyCollection<Role> Roles => _roles.AsReadOnly();
+
     public static User Register(string email, string plainPassword, IPasswordHasher hasher)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(email);
@@ -55,11 +59,11 @@ public sealed partial class User : AggregateRoot<UserId>
             RegisteredAt = DateTimeOffset.UtcNow,
             IsLockedOut = false,
         };
-user.Raise(
-    new UserRegisteredEvent(
-        user.Id,
-        user.Email,
-        user.RegisteredAt));
+        user.Raise(
+        new UserRegisteredEvent(
+            user.Id,
+            user.Email,
+            user.RegisteredAt));
         return user;
     }
 
@@ -79,4 +83,33 @@ user.Raise(
         if (IsLockedOut) return false;
         return hasher.Verify(plainPassword ?? string.Empty, PasswordHash);
     }
+
+    public void AssignRole(Role role)
+    {
+        ArgumentNullException.ThrowIfNull(role);
+
+        if (_roles.Any(r => r.Id == role.Id))
+            return;
+
+        _roles.Add(role);
+    }
+
+    public void RemoveRole(Role role)
+    {
+        ArgumentNullException.ThrowIfNull(role);
+
+        Role? existing =
+            _roles.FirstOrDefault(r => r.Id == role.Id);
+
+        if (existing is not null)
+        {
+            _roles.Remove(existing);
+        }
+    }
+
+    public IEnumerable<string> EffectivePermissions() =>
+        _roles
+            .SelectMany(r => r.Permissions)
+            .Select(p => p.Name)
+            .Distinct(StringComparer.Ordinal);
 }

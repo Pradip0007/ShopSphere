@@ -13,6 +13,8 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using ShopSphere.Domain.Users;
+using ShopSphere.Api.Features.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +44,15 @@ builder.Services
 // Replace the placeholder registered on Day 26.
 builder.Services.AddSingleton<ITokenService, JwtTokenService>();
 builder.Services.AddSingleton(TimeProvider.System);
+
+builder.Services
+    .AddAuthorizationBuilder()
+    .AddPolicy(Permissions.ProductsWrite,   p => p.RequireClaim("permission", Permissions.ProductsWrite))
+    .AddPolicy(Permissions.ProductsRead,    p => p.RequireClaim("permission", Permissions.ProductsRead))
+    .AddPolicy(Permissions.OrdersReadSelf,  p => p.RequireClaim("permission", Permissions.OrdersReadSelf))
+    .AddPolicy(Permissions.OrdersReadAll,   p => p.RequireClaim("permission", Permissions.OrdersReadAll))
+    .AddPolicy(Permissions.OrdersManage,    p => p.RequireClaim("permission", Permissions.OrdersManage));
+
 
 JwtOptions jwt = builder.Configuration
     .GetSection(JwtOptions.SectionName)
@@ -110,6 +121,9 @@ builder.Services
     });
 
 var app = builder.Build();
+
+await ShopSphere.Infrastructure.Persistence.DatabaseStartup
+    .MigrateAndSeedAsync(app.Services);
 
 app.UseExceptionHandler();
 

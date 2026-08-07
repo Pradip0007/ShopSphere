@@ -24,7 +24,9 @@ public sealed class LoginHandler(
         string normalized = (request.Email ?? string.Empty).Trim().ToLowerInvariant();
 
         User? user = await db.Users
-            .FirstOrDefaultAsync(u => u.Email == normalized, cancellationToken);
+        .Include(u => u.Roles)
+            .ThenInclude(r => r.Permissions)
+        .FirstOrDefaultAsync(u => u.Email == normalized, cancellationToken);
 
         bool passwordOk;
         if (user is null)
