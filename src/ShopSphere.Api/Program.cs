@@ -12,13 +12,22 @@ using ShopSphere.Api.Auth;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi;
 using ShopSphere.Domain.Users;
 using ShopSphere.Api.Features.Auth;
+using ShopSphere.Api.Infrastructure.Redis;
+using IDatabase = StackExchange.Redis.IDatabase;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
+
+builder.Services.AddShopSphereRedis(builder.Configuration);
+
+builder.Services.AddHealthChecks()
+    .AddRedis(
+        redisConnectionString: builder.Configuration.GetConnectionString("cache")!,
+        name: "redis",
+        tags: ["ready"]);
 
 builder.Services.AddInfrastructure();   
 
@@ -122,12 +131,30 @@ builder.Services
 
 var app = builder.Build();
 
-await ShopSphere.Infrastructure.Persistence.DatabaseStartup
-    .MigrateAndSeedAsync(app.Services);
+//This is for data seeding 
+// await ShopSphere.Infrastructure.Persistence.DatabaseStartup
+//     .MigrateAndSeedAsync(app.Services);
 
 app.UseExceptionHandler();
 
 app.MapDefaultEndpoints();
+
+app.MapGet("/", () => "ShopSphere API — Day 31 alive!");
+
+// Debug ping — remove or gate behind Development-only later.
+if (app.Environment.IsDevelopment())
+{
+    app.MapGet("/debug/redis-ping", async (IDatabase db) =>
+    {
+        var latency = await db.PingAsync();
+        return Results.Ok(new
+        {
+            pong = true,
+            latencyMs = latency.TotalMilliseconds,
+            endpoint = db.Multiplexer.GetEndPoints()[0].ToString()
+        });
+    });
+}
 
 if (app.Environment.IsDevelopment())
 {
