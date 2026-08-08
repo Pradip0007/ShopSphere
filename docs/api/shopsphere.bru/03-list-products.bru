@@ -1,0 +1,23 @@
+meta {
+  name: List products
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/products?page=1&pageSize=10
+  auth: none
+}
+
+script:post-response {
+  bru.setVar("initialTotalCount", res.body.totalCount);
+}
+
+tests {
+  test("status is 200", function() { expect(res.status).to.equal(200); });
+  test("PagedResult envelope", function() {
+    expect(res.body).to.have.property("items");
+    expect(res.body).to.have.property("totalCount");
+    expect(res.body).to.have.property("hasNext");
+  });
+}

@@ -30,6 +30,7 @@ public sealed class RegisterHandler(
             ?? throw new InvalidOperationException("Customer role missing — seed not run?");
 
         User user = User.Register(request.Email, request.Password, hasher);
+        user.AssignRole(customer);
         db.Users.Add(user);
         await db.SaveChangesAsync(cancellationToken);
 

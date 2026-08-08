@@ -29,6 +29,7 @@ public sealed class LoginHandler(
         .FirstOrDefaultAsync(u => u.Email == normalized, cancellationToken);
 
         bool passwordOk;
+        
         if (user is null)
         {
             _ = hasher.Verify(request.Password ?? string.Empty, _dummyHash.Value);

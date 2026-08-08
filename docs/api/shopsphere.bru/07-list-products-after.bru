@@ -1,0 +1,22 @@
+meta {
+  name: List products (after create)
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/v1/products?page=1&pageSize=100
+  auth: none
+}
+
+tests {
+  test("status is 200", function() { expect(res.status).to.equal(200); });
+  test("totalCount incremented", function() {
+    var prev = parseInt(bru.getVar("initialTotalCount"), 10);
+    expect(res.body.totalCount).to.equal(prev + 1);
+  });
+  test("new product present", function() {
+    var found = res.body.items.some(function(i) { return i.id === bru.getVar("createdProductId"); });
+    expect(found).to.equal(true);
+  });
+}

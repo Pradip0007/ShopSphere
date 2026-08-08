@@ -1,0 +1,18 @@
+meta {
+  name: Customer forbidden from admin endpoint
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/admin/products/{{createdProductId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{customerAccessToken}}
+}
+
+tests {
+  test("status is 403", function() { expect(res.status).to.equal(403); });
+}
