@@ -1,0 +1,32 @@
+meta {
+  name: Register customer
+  type: http
+  seq: 1
+}
+
+script:pre-request {
+  var email = "smoke-" + Date.now() + "@example.com";
+
+  bru.setVar("customerEmail", email);
+}
+post {
+  url: {{baseUrl}}/api/v1/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "{{customerEmail}}",
+    "password": "{{customerPassword}}"
+  }
+}
+
+script:post-response {
+  bru.setVar("customerId", res.body.userId);
+}
+
+tests {
+  test("status is 201", function() { expect(res.status).to.equal(201); });
+  test("returns userId", function() { expect(res.body.userId).to.be.a("string"); });
+}

@@ -1,0 +1,41 @@
+meta {
+  name: Admin create product
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/v1/admin/products
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminAccessToken}}
+}
+
+body:json {
+  {
+    "title": "Smoke Test Widget {{$guid}}",
+    "sku": "smoke-test-widget-{{$timestamp}}",
+    "description": "Created by the Day 30 smoke test.",
+    "price": 9.99,
+    "currency": "USD",
+    "initialStock": 1,
+    "categoryId": "{{electronicsCategoryId}}"
+  }
+}
+
+script:post-response {
+  bru.setVar("createdProductId", res.body.id);
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("returns Id", function() {
+    expect(res.body.id).to.be.a("string");
+  });
+}
