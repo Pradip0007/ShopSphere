@@ -26,6 +26,7 @@ using ShopSphere.Domain.Catalog;
 using ShopSphere.Domain.Users;
 
 using ShopSphere.Infrastructure;
+using ShopSphere.Api.Features.Cart;
 
 using IDatabase = StackExchange.Redis.IDatabase;
 
@@ -349,119 +350,6 @@ if (app.Environment.IsDevelopment())
 
 
     // --------------------------------------------------------
-    // Cart smoke test
-    // --------------------------------------------------------
-
-    app.MapPost(
-        "/debug/cart-smoke",
-        async (ICartRepository cart) =>
-        {
-            // Create a temporary guest/session cart.
-            var key =
-                CartKey.Session(Guid.NewGuid());
-
-
-            // Create two fake products.
-            // We are not checking SQL here.
-            // These IDs are only being used to test Redis.
-            var productA =
-                ProductId.New();
-
-            var productB =
-                ProductId.New();
-
-
-            // ------------------------------------------------
-            // ADD PRODUCT A
-            // ------------------------------------------------
-
-            await cart.AddItemAsync(
-                key,
-                productA,
-                2);
-
-            // Product A = 2
-
-
-            // ------------------------------------------------
-            // ADD MORE PRODUCT A
-            // ------------------------------------------------
-
-            await cart.AddItemAsync(
-                key,
-                productA,
-                1);
-
-            // Product A = 3
-            // because AddItem is additive:
-            // 2 + 1 = 3
-
-
-            // ------------------------------------------------
-            // ADD PRODUCT B
-            // ------------------------------------------------
-
-            await cart.AddItemAsync(
-                key,
-                productB,
-                5);
-
-            // Product B = 5
-
-
-            // ------------------------------------------------
-            // UPDATE PRODUCT B
-            // ------------------------------------------------
-
-            await cart.UpdateItemAsync(
-                key,
-                productB,
-                4);
-
-            // Product B = 4
-            //
-            // UpdateItem is absolute:
-            // 5 -> 4
-            //
-            // It does NOT do:
-            // 5 + 4 = 9
-
-
-            // ------------------------------------------------
-            // READ CART
-            // ------------------------------------------------
-
-            var loaded =
-                await cart.GetAsync(key);
-
-
-            // ------------------------------------------------
-            // RETURN RESULT
-            // ------------------------------------------------
-
-            return Results.Ok(new
-            {
-                key =
-                    key.ToRedisKey(),
-
-                totalUnits =
-                    loaded.TotalUnits,
-
-                lines =
-                    loaded.Lines.Select(
-                        l => new
-                        {
-                            productId =
-                                l.ProductId.ToString(),
-
-                            qty =
-                                l.Quantity
-                        })
-            });
-        });
-
-
-    // --------------------------------------------------------
     // OpenAPI + Scalar
     // --------------------------------------------------------
 
@@ -510,6 +398,11 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
+// ------------------------------------------------------------
+// ShopSphere Cart endpoints
+// ------------------------------------------------------------
+
+app.MapCartEndpoints();
 
 // ------------------------------------------------------------
 // ShopSphere endpoints
