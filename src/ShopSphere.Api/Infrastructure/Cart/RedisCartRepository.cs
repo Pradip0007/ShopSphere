@@ -92,4 +92,37 @@ public sealed class RedisCartRepository : ICartRepository
         ct.ThrowIfCancellationRequested();
         return _db.KeyDeleteAsync(key.ToRedisKey());
     }
+
+    public async Task MergeAsync(CartKey source, CartKey destination, CancellationToken ct = default)
+    {
+        if (source == destination) return;
+        ct.ThrowIfCancellationRequested();
+
+        var sourceKey = source.ToRedisKey();
+        var destKey = destination.ToRedisKey();
+
+        var sourceEntries = await _db.HashGetAllAsync(sourceKey).ConfigureAwait(false);
+        if (sourceEntries.Length == 0)
+        {
+            // Nothing to merge — still cleanup source in case of a stale empty key.
+            await _db.KeyDeleteAsync(sourceKey).ConfigureAwait(false);
+            return;
+        }
+
+        // Pipeline: increment each field on the destination, then delete source, then set TTL.
+        var batch = _db.CreateBatch();
+        var tasks = new List<Task>(sourceEntries.Length + 2);
+
+        foreach (var entry in sourceEntries)
+        {
+            if (!int.TryParse(entry.Value.ToString(), out var qty) || qty <= 0) continue;
+            tasks.Add(batch.HashIncrementAsync(destKey, entry.Name, qty));
+        }
+
+        tasks.Add(batch.KeyDeleteAsync(sourceKey));
+        tasks.Add(batch.KeyExpireAsync(destKey, CartTtl));
+
+        batch.Execute();
+        await Task.WhenAll(tasks).ConfigureAwait(false);
+    }
 }
