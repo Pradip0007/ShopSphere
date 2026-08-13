@@ -13,4 +13,6 @@ public interface ICartRepository
     Task RemoveItemAsync(CartKey key, ProductId productId, CancellationToken ct = default);
 
     Task ClearAsync(CartKey key, CancellationToken ct = default);
+
+    Task MergeAsync(CartKey source, CartKey destination, CancellationToken ct = default);
 }

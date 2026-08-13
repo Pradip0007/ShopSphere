@@ -16,14 +16,15 @@ public static class DependencyInjection
     {
         services.AddDbContext<ShopSphereDbContext>((sp, options) =>
         {
-            var config = sp.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
+            var config = sp.GetRequiredService<IConfiguration>();
             var cs = config.GetConnectionString(connectionStringName)
                 ?? config[$"ConnectionStrings:{connectionStringName}"]
                 ?? Environment.GetEnvironmentVariable($"ConnectionStrings__{connectionStringName}");
 
             if (string.IsNullOrWhiteSpace(cs))
             {
-                cs = "Server=127.0.0.1,1433;Database=shopsphere;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;Encrypt=False;";
+                throw new InvalidOperationException(
+                    $"Connection string '{connectionStringName}' was not found.");
             }
 
             options.UseSqlServer(cs);

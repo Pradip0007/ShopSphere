@@ -4,6 +4,8 @@ using ShopSphere.Api.Auth;
 using ShopSphere.Domain.Users;
 using ShopSphere.Infrastructure.Persistence;
 using ShopSphere.Infrastructure.Security;
+using ShopSphere.Domain.Cart;
+using ShopSphere.Api.Features.Cart;
 
 namespace ShopSphere.Api.Features.Auth.Login;
 
@@ -11,7 +13,9 @@ public sealed class LoginHandler(
     ShopSphereDbContext db,
     IPasswordHasher hasher,
     ITokenService tokens,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    ICartRepository carts,
+    IHttpContextAccessor httpContextAccessor)
     : IRequestHandler<LoginCommand, LoginResponse>
 {
     private static readonly Lazy<string> _dummyHash = new(() =>
@@ -45,6 +49,21 @@ public sealed class LoginHandler(
             throw new UnauthorizedAccessException("Invalid credentials.");
         }
 
+        // Merge anonymous cart into the authenticated user's cart
+
+        bool cartMerged = false;
+
+        HttpContext? http = httpContextAccessor.HttpContext;
+
+        if (http is not null)
+        {
+            cartMerged = await TryMergeGuestCartAsync(
+                http,
+                user.Id.Value,
+                carts,
+                cancellationToken);
+        }
+
         IssuedToken access = tokens.IssueAccessToken(user);
         IssuedRefreshToken refresh = tokens.IssueRefreshToken();
 
@@ -62,5 +81,41 @@ public sealed class LoginHandler(
             access.ExpiresAt,
             refresh.Value,
             refresh.ExpiresAt);
+    }
+
+    private static async Task<bool> TryMergeGuestCartAsync(
+        HttpContext http,
+        Guid userId,
+        ICartRepository carts,
+        CancellationToken ct)
+    {
+        if (!http.Request.Cookies.TryGetValue(
+                CartKeyResolver.SessionCookieName,
+                out var raw)
+            || !Guid.TryParse(raw, out var sessionGuid))
+        {
+            return false;
+        }
+
+        var source = CartKey.Session(sessionGuid);
+
+        var destination = CartKey.User(userId);
+
+        await carts.MergeAsync(
+            source,
+            destination,
+            ct);
+
+        http.Response.Cookies.Delete(
+            CartKeyResolver.SessionCookieName,
+            new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Lax,
+                Path = "/"
+            });
+
+        return true;
     }
 }

@@ -261,6 +261,12 @@ builder.Services.AddOpenApi(
 
 
 // ------------------------------------------------------------
+// Http service 
+// ------------------------------------------------------------
+builder.Services.AddHttpContextAccessor();
+
+
+// ------------------------------------------------------------
 // API Versioning
 // ------------------------------------------------------------
 
@@ -323,32 +329,6 @@ app.MapGet(
 
 if (app.Environment.IsDevelopment())
 {
-    // --------------------------------------------------------
-    // Redis ping
-    // --------------------------------------------------------
-
-    app.MapGet(
-        "/debug/redis-ping",
-        async (IDatabase db) =>
-        {
-            var latency =
-                await db.PingAsync();
-
-            return Results.Ok(new
-            {
-                pong = true,
-
-                latencyMs =
-                    latency.TotalMilliseconds,
-
-                endpoint =
-                    db.Multiplexer
-                        .GetEndPoints()[0]
-                        .ToString()
-            });
-        });
-
-
     // --------------------------------------------------------
     // OpenAPI + Scalar
     // --------------------------------------------------------
