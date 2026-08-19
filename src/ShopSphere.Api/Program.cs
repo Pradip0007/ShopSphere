@@ -16,43 +16,30 @@ using Scalar.AspNetCore;
 using ShopSphere.Api.Auth;
 using ShopSphere.Api.Behaviors;
 using ShopSphere.Api.Features.Auth;
+using ShopSphere.Api.Features.Cart;
+using ShopSphere.Api.Features.Checkout;
 using ShopSphere.Api.Infrastructure;
 using ShopSphere.Api.Infrastructure.Cart;
+using ShopSphere.Api.Infrastructure.Ordering;
 using ShopSphere.Api.Infrastructure.Redis;
 using ShopSphere.Api.Middleware;
 
 using ShopSphere.Domain.Cart;
 using ShopSphere.Domain.Catalog;
+using ShopSphere.Domain.Ordering;
 using ShopSphere.Domain.Users;
 
 using ShopSphere.Infrastructure;
-using ShopSphere.Api.Features.Cart;
 
 using IDatabase = StackExchange.Redis.IDatabase;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-// ------------------------------------------------------------
-// Aspire service defaults
-// ------------------------------------------------------------
-
 builder.AddServiceDefaults();
 
-
-// ------------------------------------------------------------
-// Redis
-// ------------------------------------------------------------
-
 builder.Services.AddShopSphereRedis(builder.Configuration);
-
 builder.Services.AddShopSphereCart();
-
-
-// ------------------------------------------------------------
-// Health checks
-// ------------------------------------------------------------
 
 builder.Services
     .AddHealthChecks()
@@ -62,49 +49,20 @@ builder.Services
         name: "redis",
         tags: ["ready"]);
 
-
-// ------------------------------------------------------------
-// Infrastructure / EF Core
-// ------------------------------------------------------------
-
 builder.Services.AddInfrastructure();
-
-
-// ------------------------------------------------------------
-// MediatR
-// ------------------------------------------------------------
 
 Assembly apiAssembly = Assembly.GetExecutingAssembly();
 
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(apiAssembly);
-
-    cfg.AddOpenBehavior(
-        typeof(LoggingBehavior<,>));
-
-    cfg.AddOpenBehavior(
-        typeof(ValidationBehavior<,>));
+    cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
+    cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
-
-
-// ------------------------------------------------------------
-// FluentValidation
-// ------------------------------------------------------------
 
 builder.Services.AddValidatorsFromAssembly(apiAssembly);
 
-
-// ------------------------------------------------------------
-// Endpoint discovery
-// ------------------------------------------------------------
-
 builder.Services.AddEndpoints(apiAssembly);
-
-
-// ------------------------------------------------------------
-// JWT configuration
-// ------------------------------------------------------------
 
 builder.Services
     .AddOptions<JwtOptions>()
@@ -115,57 +73,37 @@ builder.Services
         "Jwt:Key must be at least 32 characters.")
     .ValidateOnStart();
 
-
-// ------------------------------------------------------------
-// JWT services
-// ------------------------------------------------------------
-
 builder.Services.AddSingleton<ITokenService, JwtTokenService>();
 
 builder.Services.AddSingleton(TimeProvider.System);
 
-
-// ------------------------------------------------------------
-// Authorization policies
-// ------------------------------------------------------------
-
 builder.Services
     .AddAuthorizationBuilder()
-
     .AddPolicy(
         Permissions.ProductsWrite,
         p => p.RequireClaim(
             "permission",
             Permissions.ProductsWrite))
-
     .AddPolicy(
         Permissions.ProductsRead,
         p => p.RequireClaim(
             "permission",
             Permissions.ProductsRead))
-
     .AddPolicy(
         Permissions.OrdersReadSelf,
         p => p.RequireClaim(
             "permission",
             Permissions.OrdersReadSelf))
-
     .AddPolicy(
         Permissions.OrdersReadAll,
         p => p.RequireClaim(
             "permission",
             Permissions.OrdersReadAll))
-
     .AddPolicy(
         Permissions.OrdersManage,
         p => p.RequireClaim(
             "permission",
             Permissions.OrdersManage));
-
-
-// ------------------------------------------------------------
-// Read JWT options
-// ------------------------------------------------------------
 
 JwtOptions jwt =
     builder.Configuration
@@ -174,15 +112,9 @@ JwtOptions jwt =
     ?? throw new InvalidOperationException(
         "Jwt options missing.");
 
-
-// ------------------------------------------------------------
-// Authentication
-// ------------------------------------------------------------
-
 builder.Services
     .AddAuthentication(
         JwtBearerDefaults.AuthenticationScheme)
-
     .AddJwtBearer(options =>
     {
         options.RequireHttpsMetadata =
@@ -200,29 +132,16 @@ builder.Services
                 ValidAudience = jwt.Audience,
 
                 ValidateIssuerSigningKey = true,
-
                 IssuerSigningKey =
                     new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(jwt.Key)),
 
                 ValidateLifetime = true,
-
-                ClockSkew =
-                    TimeSpan.FromSeconds(30)
+                ClockSkew = TimeSpan.FromSeconds(30)
             };
     });
 
-
-// ------------------------------------------------------------
-// Authorization
-// ------------------------------------------------------------
-
 builder.Services.AddAuthorization();
-
-
-// ------------------------------------------------------------
-// Exception handling
-// ------------------------------------------------------------
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
@@ -235,11 +154,6 @@ builder.Services.AddProblemDetails(options =>
     };
 });
 
-
-// ------------------------------------------------------------
-// OpenAPI
-// ------------------------------------------------------------
-
 builder.Services.AddOpenApi(
     "v1",
     options =>
@@ -251,24 +165,16 @@ builder.Services.AddOpenApi(
                 {
                     Title = "ShopSphere API",
                     Version = "v1",
-                    Description =
-                        "Enterprise e-commerce platform."
+                    Description = "Enterprise e-commerce platform."
                 };
 
                 return Task.CompletedTask;
             });
     });
 
+builder.Services.AddSingleton<IOrderRepository, InMemoryOrderRepository>();
 
-// ------------------------------------------------------------
-// Http service 
-// ------------------------------------------------------------
 builder.Services.AddHttpContextAccessor();
-
-
-// ------------------------------------------------------------
-// API Versioning
-// ------------------------------------------------------------
 
 builder.Services
     .AddApiVersioning(options =>
@@ -284,116 +190,52 @@ builder.Services
         options.ApiVersionReader =
             new UrlSegmentApiVersionReader();
     })
-
     .AddApiExplorer(options =>
     {
         options.GroupNameFormat = "'v'V";
-
         options.SubstituteApiVersionInUrl = true;
     });
 
-
-// ============================================================
-// BUILD APPLICATION
-// ============================================================
-
 var app = builder.Build();
-
-
-// ------------------------------------------------------------
-// Exception handling middleware
-// ------------------------------------------------------------
 
 app.UseExceptionHandler();
 
-
-// ------------------------------------------------------------
-// Aspire default endpoints
-// ------------------------------------------------------------
-
 app.MapDefaultEndpoints();
-
-
-// ------------------------------------------------------------
-// Root endpoint
-// ------------------------------------------------------------
 
 app.MapGet(
     "/",
     () => Results.Redirect("/scalar/v1"));
 
-
-// ============================================================
-// DEVELOPMENT-ONLY DEBUG ENDPOINTS
-// ============================================================
-
 if (app.Environment.IsDevelopment())
 {
-    // --------------------------------------------------------
-    // OpenAPI + Scalar
-    // --------------------------------------------------------
-
     app.MapOpenApi();
 
     app.MapScalarApiReference(options =>
     {
-        options.Title =
-            "ShopSphere API";
-
-        options.Theme =
-            ScalarTheme.Purple;
+        options.Title = "ShopSphere API";
+        options.Theme = ScalarTheme.Purple;
     });
 }
 
-
-// ============================================================
-// API VERSIONED ROUTES
-// ============================================================
-
 ApiVersionSet apiVersionSet =
     app.NewApiVersionSet()
-
-        .HasApiVersion(
-            new ApiVersion(1))
-
+        .HasApiVersion(new ApiVersion(1))
         .ReportApiVersions()
-
         .Build();
-
 
 RouteGroupBuilder versionedGroup =
     app
-        .MapGroup(
-            "/api/v{version:apiVersion}")
-
-        .WithApiVersionSet(
-            apiVersionSet);
-
-
-// ------------------------------------------------------------
-// Authentication / Authorization middleware
-// ------------------------------------------------------------
+        .MapGroup("/api/v{version:apiVersion}")
+        .WithApiVersionSet(apiVersionSet);
 
 app.UseAuthentication();
 
 app.UseAuthorization();
 
-// ------------------------------------------------------------
-// ShopSphere Cart endpoints
-// ------------------------------------------------------------
-
 app.MapCartEndpoints();
 
-// ------------------------------------------------------------
-// ShopSphere endpoints
-// ------------------------------------------------------------
+app.MapCheckoutEndpoints();
 
-app.MapEndpoints(
-    versionedGroup);
-
-
-// ------------------------------------------------------------
-// Start application
-// ------------------------------------------------------------
+app.MapEndpoints(versionedGroup);
 
 app.Run();
