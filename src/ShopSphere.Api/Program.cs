@@ -30,6 +30,9 @@ using ShopSphere.Domain.Ordering;
 using ShopSphere.Domain.Users;
 
 using ShopSphere.Infrastructure;
+using ShopSphere.Api.Infrastructure.Messaging;
+using MassTransit;
+using ShopSphere.Api.Consumers;
 
 using IDatabase = StackExchange.Redis.IDatabase;
 
@@ -40,6 +43,7 @@ builder.AddServiceDefaults();
 
 builder.Services.AddShopSphereRedis(builder.Configuration);
 builder.Services.AddShopSphereCart();
+builder.Services.AddShopSphereMessaging(builder.Configuration);
 
 builder.Services
     .AddHealthChecks()
@@ -214,6 +218,13 @@ if (app.Environment.IsDevelopment())
     {
         options.Title = "ShopSphere API";
         options.Theme = ScalarTheme.Purple;
+    });
+
+    app.MapPost("/debug/publish-ping", async (IBus bus) =>
+    {
+        var cmd = new PingCommand(Guid.NewGuid(), DateTimeOffset.UtcNow, "hello rabbit");
+        await bus.Publish(cmd);
+        return Results.Ok(new { published = cmd });
     });
 }
 
