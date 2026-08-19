@@ -5,6 +5,7 @@ using ShopSphere.Domain.Common;
 using ShopSphere.Infrastructure.Persistence;
 using ShopSphere.Domain.Users;
 using ShopSphere.Infrastructure.Security;
+using ShopSphere.Domain.Catalog;
 
 namespace ShopSphere.Infrastructure;
 
@@ -29,6 +30,8 @@ public static class DependencyInjection
 
             options.UseSqlServer(cs);
         });
+
+        services.AddScoped<IProductRepository, ProductRepository>();
 
         services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
 
