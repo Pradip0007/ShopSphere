@@ -1,7 +1,7 @@
 # ADR-002: Order Saga — Choreography over Orchestration
 
 - Status: Accepted
-- Date: 2026-XX-XX (fill today)
+- Date: 2026-08-19
 - Author: Solo (initials or handle)
 - Supersedes: —
 - Superseded by: —
