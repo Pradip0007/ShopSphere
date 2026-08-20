@@ -219,13 +219,6 @@ if (app.Environment.IsDevelopment())
         options.Title = "ShopSphere API";
         options.Theme = ScalarTheme.Purple;
     });
-
-    app.MapPost("/debug/publish-ping", async (IBus bus) =>
-    {
-        var cmd = new PingCommand(Guid.NewGuid(), DateTimeOffset.UtcNow, "hello rabbit");
-        await bus.Publish(cmd);
-        return Results.Ok(new { published = cmd });
-    });
 }
 
 ApiVersionSet apiVersionSet =
