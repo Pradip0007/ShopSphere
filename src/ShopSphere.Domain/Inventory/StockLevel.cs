@@ -15,22 +15,25 @@ public sealed class StockLevel : AggregateRoot<StockLevelId>
     // EF ctor
     private StockLevel() { }
 
-    private StockLevel(StockLevelId id, ProductId productId, int available) : base(id)
+    private StockLevel(StockLevelId id, ProductId productId,Sku sku,  int available) : base(id)
     {
         ProductId = productId;
+        Sku = sku;
         Available = available;
         Reserved = 0;
     }
 
     public ProductId ProductId { get; private set; }
+    public Sku Sku { get; private set; } = default!;
     public int Available { get; private set; }
     public int Reserved { get; private set; }
 
-    public static StockLevel Create(ProductId productId, int initialAvailable = 0)
+    public static StockLevel Create(ProductId productId, Sku sku, int initialAvailable = 0)
     {
+        ArgumentNullException.ThrowIfNull(sku);
         if (initialAvailable < 0)
             throw new ArgumentOutOfRangeException(nameof(initialAvailable), "Initial stock cannot be negative.");
-        return new StockLevel(StockLevelId.New(), productId, initialAvailable);
+        return new StockLevel(StockLevelId.New(), productId, sku, initialAvailable);
     }
 
     /// <summary>

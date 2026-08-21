@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ShopSphere.Domain.Catalog;
 using ShopSphere.Domain.Inventory;
 using ShopSphere.Domain.Users;
+using ShopSphere.Domain.Ordering;  
 
 namespace ShopSphere.Infrastructure.Persistence;
 
@@ -15,6 +16,8 @@ public sealed class ShopSphereDbContext(DbContextOptions<ShopSphereDbContext> op
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<Permission> Permissions => Set<Permission>();
+    public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
