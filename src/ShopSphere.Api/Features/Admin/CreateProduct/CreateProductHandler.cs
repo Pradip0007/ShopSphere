@@ -35,7 +35,7 @@ public sealed class CreateProductHandler(ShopSphereDbContext db)
             
         product.Publish(); 
         
-        StockLevel stock = StockLevel.Create(product.Id, request.InitialStock);
+        StockLevel stock = StockLevel.Create(product.Id, product.Sku, request.InitialStock);
 
         db.Products.Add(product);
 

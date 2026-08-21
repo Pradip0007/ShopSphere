@@ -33,6 +33,7 @@ using ShopSphere.Infrastructure;
 using ShopSphere.Api.Infrastructure.Messaging;
 using MassTransit;
 using ShopSphere.Api.Consumers;
+using ShopSphere.Api.Infrastructure.Ordering;
 
 using IDatabase = StackExchange.Redis.IDatabase;
 
@@ -176,7 +177,7 @@ builder.Services.AddOpenApi(
             });
     });
 
-builder.Services.AddSingleton<IOrderRepository, InMemoryOrderRepository>();
+builder.Services.AddScoped<IOrderRepository, ShopSphere.Infrastructure.Persistence.SqlOrderRepository>();
 
 builder.Services.AddHttpContextAccessor();
 

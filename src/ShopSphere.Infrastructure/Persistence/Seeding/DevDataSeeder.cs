@@ -135,6 +135,7 @@ public static class DevDataSeeder
             {
                 StockLevel stock = StockLevel.Create(
                     product.Id,
+                    product.Sku, 
                     initialAvailable: Random.Shared.Next(5, 40));
 
                 db.StockLevels.Add(stock);
