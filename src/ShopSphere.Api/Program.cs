@@ -20,7 +20,6 @@ using ShopSphere.Api.Features.Cart;
 using ShopSphere.Api.Features.Checkout;
 using ShopSphere.Api.Infrastructure;
 using ShopSphere.Api.Infrastructure.Cart;
-using ShopSphere.Api.Infrastructure.Ordering;
 using ShopSphere.Api.Infrastructure.Redis;
 using ShopSphere.Api.Middleware;
 
@@ -30,11 +29,10 @@ using ShopSphere.Domain.Ordering;
 using ShopSphere.Domain.Users;
 
 using ShopSphere.Infrastructure;
+using ShopSphere.Infrastructure.Persistence;
 using ShopSphere.Api.Infrastructure.Messaging;
 using MassTransit;
 using ShopSphere.Api.Consumers;
-using ShopSphere.Api.Infrastructure.Ordering;
-
 using IDatabase = StackExchange.Redis.IDatabase;
 
 
@@ -81,6 +79,8 @@ builder.Services
 builder.Services.AddSingleton<ITokenService, JwtTokenService>();
 
 builder.Services.AddSingleton(TimeProvider.System);
+
+builder.Services.AddSingleton<IProcessedMessageStore,InMemoryProcessedMessageStore>();
 
 builder.Services
     .AddAuthorizationBuilder()
@@ -232,6 +232,9 @@ RouteGroupBuilder versionedGroup =
     app
         .MapGroup("/api/v{version:apiVersion}")
         .WithApiVersionSet(apiVersionSet);
+
+///commad for dataseed
+await DatabaseStartup.MigrateAndSeedAsync(app.Services);
 
 app.UseAuthentication();
 
