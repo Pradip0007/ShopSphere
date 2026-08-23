@@ -27,7 +27,8 @@ using ShopSphere.Domain.Cart;
 using ShopSphere.Domain.Catalog;
 using ShopSphere.Domain.Ordering;
 using ShopSphere.Domain.Users;
-
+using ShopSphere.Api.Infrastructure.Payments;
+using ShopSphere.Domain.Payments;
 using ShopSphere.Infrastructure;
 using ShopSphere.Infrastructure.Persistence;
 using ShopSphere.Api.Infrastructure.Messaging;
@@ -180,6 +181,13 @@ builder.Services.AddOpenApi(
 builder.Services.AddScoped<IOrderRepository, ShopSphere.Infrastructure.Persistence.SqlOrderRepository>();
 
 builder.Services.AddHttpContextAccessor();
+builder.Services
+    .AddOptions<StripeOptions>()
+    .Bind(builder.Configuration.GetSection(StripeOptions.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddSingleton<IPaymentGateway, StripePaymentGateway>();
 
 builder.Services
     .AddApiVersioning(options =>

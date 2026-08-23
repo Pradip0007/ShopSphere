@@ -16,6 +16,7 @@
     <PackageReference Include="Serilog.Enrichers.Thread" />
     <PackageReference Include="Serilog.Sinks.Console" />
     <PackageReference Include="StackExchange.Redis" />
+    <PackageReference Include="Stripe.net" />
     <ProjectReference Include="..\ShopSphere.ServiceDefaults\ShopSphere.ServiceDefaults.csproj" />
     <ProjectReference Include="..\ShopSphere.Domain\ShopSphere.Domain.csproj" />
     <ProjectReference Include="..\ShopSphere.Infrastructure\ShopSphere.Infrastructure.csproj" />
