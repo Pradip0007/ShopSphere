@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ShopSphere.Api\ShopSphere.Api.csproj" />
+    <ProjectReference Include="..\ShopSphere.Workers\ShopSphere.Workers.csproj" />
   </ItemGroup>
 
   <ItemGroup>
