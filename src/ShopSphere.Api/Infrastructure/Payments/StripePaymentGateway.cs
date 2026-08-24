@@ -23,6 +23,7 @@ public sealed class StripePaymentGateway : IPaymentGateway
         Money amount,
         string paymentMethodId,
         string idempotencyKey,
+        IReadOnlyDictionary<string, string>? metadata,
         CancellationToken ct = default)
     {
         var options = new PaymentIntentCreateOptions
@@ -36,6 +37,10 @@ public sealed class StripePaymentGateway : IPaymentGateway
             {
                 Enabled = true,
                 AllowRedirects = "never"  // no 3DS redirect flow for the saga
+            },
+            Metadata = new Dictionary<string, string>
+            {
+                ["idempotencyKey"] = idempotencyKey
             }
         };
 

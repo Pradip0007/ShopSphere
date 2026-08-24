@@ -50,10 +50,16 @@ public sealed class PaymentAuthorizationSaga : IConsumer<InventoryReserved>
         // hooks the real customer-provided payment method id from the checkout DTO.
         const string TestPaymentMethod = "pm_card_visa";
 
+       var metadata = new Dictionary<string, string>
+        {
+            ["orderId"] = order.Id.Value.ToString()
+        };
+
         var result = await _gateway.AuthorizeAsync(
             order.Subtotal,
             TestPaymentMethod,
             idempotencyKey: $"authorize:{order.Id.Value:D}",
+            metadata,
             context.CancellationToken);
 
         if (!result.Succeeded)
