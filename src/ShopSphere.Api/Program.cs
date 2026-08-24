@@ -22,7 +22,7 @@ using ShopSphere.Api.Infrastructure;
 using ShopSphere.Api.Infrastructure.Cart;
 using ShopSphere.Api.Infrastructure.Redis;
 using ShopSphere.Api.Middleware;
-
+using StackExchange.Redis;
 using ShopSphere.Domain.Cart;
 using ShopSphere.Domain.Catalog;
 using ShopSphere.Domain.Ordering;
@@ -237,6 +237,26 @@ if (app.Environment.IsDevelopment())
     {
         options.Title = "ShopSphere API";
         options.Theme = ScalarTheme.Purple;
+    });
+
+    app.MapGet(
+    "/debug/inventory-snapshot",
+    async (IDatabase db) =>
+    {
+        var entries =
+            await db.HashGetAllAsync(
+                "inventory:snapshot");
+
+        var payload = entries
+            .Where(e => !e.Name.IsNull &&
+                        !e.Value.IsNull)
+            .Select(e => new
+            {
+                sku = e.Name.ToString(),
+                available = (int)e.Value
+            });
+
+        return Results.Ok(payload);
     });
 }
 
