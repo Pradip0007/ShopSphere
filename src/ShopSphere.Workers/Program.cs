@@ -2,6 +2,8 @@ using System.Reflection;
 using MassTransit;
 using ShopSphere.Workers.Jobs;
 using StackExchange.Redis;
+using ShopSphere.Api.Infrastructure.Inventory;
+using ShopSphere.Workers.Jobs;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -41,9 +43,18 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
-builder.Services.AddHostedService<
-    AbandonedCartReminderJob>();
+builder.Services.AddSingleton<IStockService, InMemoryStockService>();
+
+builder.Services.AddHostedService<AbandonedCartReminderJob>();
+builder.Services.AddHostedService<InventorySnapshotJob>();
 
 var host = builder.Build();
+
+// Seed for demo
+var stock = host.Services.GetRequiredService<IStockService>();
+for (var i = 0; i < 5; i++)
+{
+    _ = await stock.ReserveAsync(Guid.NewGuid(), 0);
+}
 
 host.Run();
