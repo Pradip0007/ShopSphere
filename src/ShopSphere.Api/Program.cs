@@ -34,6 +34,8 @@ using ShopSphere.Infrastructure.Persistence;
 using ShopSphere.Api.Infrastructure.Messaging;
 using MassTransit;
 using ShopSphere.Api.Consumers;
+using ShopSphere.Api.Infrastructure.Notifications;
+using ShopSphere.Domain.Notifications;
 using ShopSphere.Api.Features.Webhooks.Stripe;
 using IDatabase = StackExchange.Redis.IDatabase;
 
@@ -209,6 +211,13 @@ builder.Services
         options.GroupNameFormat = "'v'V";
         options.SubstituteApiVersionInUrl = true;
     });
+
+builder.Services.AddOptions<EmailOptions>()
+    .Bind(builder.Configuration.GetSection(EmailOptions.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddScoped<IEmailSender, MailKitEmailSender>();
 
 var app = builder.Build();
 
