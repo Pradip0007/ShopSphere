@@ -34,6 +34,7 @@ using ShopSphere.Infrastructure.Persistence;
 using ShopSphere.Api.Infrastructure.Messaging;
 using MassTransit;
 using ShopSphere.Api.Consumers;
+using ShopSphere.Api.Features.Webhooks.Stripe;
 using IDatabase = StackExchange.Redis.IDatabase;
 
 
@@ -179,7 +180,7 @@ builder.Services.AddOpenApi(
     });
 
 builder.Services.AddScoped<IOrderRepository, ShopSphere.Infrastructure.Persistence.SqlOrderRepository>();
-
+builder.Services.AddSingleton<IProcessedWebhookStore, InMemoryProcessedWebhookStore>();
 builder.Services.AddHttpContextAccessor();
 builder.Services
     .AddOptions<StripeOptions>()
@@ -243,6 +244,8 @@ RouteGroupBuilder versionedGroup =
 
 ///commad for dataseed
 await DatabaseStartup.MigrateAndSeedAsync(app.Services);
+
+app.MapStripeWebhook();
 
 app.UseAuthentication();
 

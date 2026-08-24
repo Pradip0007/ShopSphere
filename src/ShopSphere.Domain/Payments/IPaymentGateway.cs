@@ -8,6 +8,7 @@ public interface IPaymentGateway
         Money amount,
         string paymentMethodId,
         string idempotencyKey,
+        IReadOnlyDictionary<string, string>? metadata,
         CancellationToken ct = default);
 }
 
