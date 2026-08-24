@@ -24,4 +24,8 @@ var api = builder.AddProject<Projects.ShopSphere_Api>("api")
     .WithEnvironment("Email__Port", "1025")
     .WaitFor(sql);
 
+builder.AddProject<Projects.ShopSphere_Workers>("workers")
+    .WithReference(cache)
+    .WithReference(rabbit);
+
 builder.Build().Run();
