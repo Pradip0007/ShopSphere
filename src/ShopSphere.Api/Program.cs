@@ -42,6 +42,9 @@ using ShopSphere.Domain.Notifications;
 using ShopSphere.Api.Features.Webhooks.Stripe;
 using Microsoft.Extensions.Http.Resilience;
 using Polly;
+using ShopSphere.Domain.Reviews;
+using ShopSphere.Infrastructure.Reviews;
+using ShopSphere.Api.Features.Reviews;
 using IDatabase = StackExchange.Redis.IDatabase;
 
 
@@ -247,6 +250,8 @@ builder.Services.AddOptions<EmailOptions>()
 
 builder.Services.AddScoped<IEmailSender, MailKitEmailSender>();
 
+builder.Services.AddScoped<IReviewRepository, EfReviewRepository>();
+
 builder.Services.Scan(scan => scan
     .FromAssemblies(typeof(Program).Assembly)
     .AddClasses(c => c.AssignableTo<IIntegrationEventMarker>())
@@ -318,6 +323,8 @@ RouteGroupBuilder versionedGroup =
 await DatabaseStartup.MigrateAndSeedAsync(app.Services);
 
 app.MapStripeWebhook();
+
+app.MapReviewEndpoints();
 
 app.UseAuthentication();
 
