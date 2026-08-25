@@ -40,6 +40,8 @@ using ShopSphere.Api.Consumers;
 using ShopSphere.Api.Infrastructure.Notifications;
 using ShopSphere.Domain.Notifications;
 using ShopSphere.Api.Features.Webhooks.Stripe;
+using Microsoft.Extensions.Http.Resilience;
+using Polly;
 using IDatabase = StackExchange.Redis.IDatabase;
 
 
@@ -203,7 +205,21 @@ builder.Services
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddSingleton<IPaymentGateway, StripePaymentGateway>();
+builder.Services.AddHttpClient<IPaymentGateway, StripePaymentGateway>(client =>
+{
+    client.BaseAddress = new Uri("https://api.stripe.com");
+    client.Timeout = TimeSpan.FromSeconds(30);
+})
+.AddStandardResilienceHandler(o =>
+{
+    o.Retry.MaxRetryAttempts = 3;
+    o.Retry.BackoffType = DelayBackoffType.Exponential;
+    o.Retry.UseJitter = true;
+    o.Retry.Delay = TimeSpan.FromSeconds(1);
+
+    o.AttemptTimeout.Timeout = TimeSpan.FromSeconds(10);
+    o.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(60);
+});
 
 builder.Services
     .AddApiVersioning(options =>

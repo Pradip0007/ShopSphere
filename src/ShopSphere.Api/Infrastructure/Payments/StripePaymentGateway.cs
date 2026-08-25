@@ -11,11 +11,15 @@ public sealed class StripePaymentGateway : IPaymentGateway
     private readonly ILogger<StripePaymentGateway> _logger;
 
     public StripePaymentGateway(
+        HttpClient httpClient,
         IOptions<StripeOptions> options,
         ILogger<StripePaymentGateway> logger)
     {
-        StripeConfiguration.ApiKey = options.Value.SecretKey;
-        _intents = new PaymentIntentService();
+        var stripeClient = new StripeClient(
+            apiKey: options.Value.SecretKey,
+            httpClient: new SystemNetHttpClient(httpClient));
+
+        _intents = new PaymentIntentService(stripeClient);
         _logger = logger;
     }
 
@@ -26,54 +30,64 @@ public sealed class StripePaymentGateway : IPaymentGateway
         IReadOnlyDictionary<string, string>? metadata,
         CancellationToken ct = default)
     {
-        var options = new PaymentIntentCreateOptions
+        var opts = new PaymentIntentCreateOptions
         {
             Amount = ToStripeMinorUnits(amount),
             Currency = amount.Currency.ToLowerInvariant(),
             PaymentMethod = paymentMethodId,
-            Confirm = true,               // authorize immediately
-            CaptureMethod = "manual",     // auth-then-capture; capture on shipment
+            Confirm = true,
+            CaptureMethod = "manual",
             AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
             {
                 Enabled = true,
-                AllowRedirects = "never"  // no 3DS redirect flow for the saga
+                AllowRedirects = "never"
             },
-            Metadata = new Dictionary<string, string>
-            {
-                ["idempotencyKey"] = idempotencyKey
-            }
+            Metadata = metadata is null
+                ? null
+                : new Dictionary<string, string>(metadata)
         };
 
-        var requestOptions = new RequestOptions
+        var reqOptions = new RequestOptions
         {
             IdempotencyKey = idempotencyKey
         };
 
         try
         {
-            var intent = await _intents.CreateAsync(options, requestOptions, ct);
+            var intent = await _intents.CreateAsync(
+                opts,
+                reqOptions,
+                ct);
 
-            if (intent.Status == "requires_capture" || intent.Status == "succeeded")
+            if (intent.Status is "requires_capture" or "succeeded")
             {
-                return new AuthorizationResult(true, intent.Id, null);
+                return new AuthorizationResult(
+                    true,
+                    intent.Id,
+                    null);
             }
 
-            return new AuthorizationResult(false, intent.Id,
-                $"Stripe returned status '{intent.Status}'.");
+            return new AuthorizationResult(
+                false,
+                intent.Id,
+                $"Stripe status '{intent.Status}'.");
         }
         catch (StripeException ex)
         {
-            _logger.LogWarning(ex,
-                "Stripe authorize failed | code={Code} message={Message}",
-                ex.StripeError?.Code, ex.Message);
-            return new AuthorizationResult(false, ex.StripeError?.PaymentIntent?.Id,
+            _logger.LogWarning(
+                ex,
+                "Stripe authorize failed | code={Code}",
+                ex.StripeError?.Code);
+
+            return new AuthorizationResult(
+                false,
+                ex.StripeError?.PaymentIntent?.Id,
                 ex.StripeError?.Message ?? ex.Message);
         }
     }
 
-    private static long ToStripeMinorUnits(Money amount)
-    {
-        // Stripe uses cents. Multiply by 100 and truncate.
-        return (long)Math.Round(amount.Amount * 100m, MidpointRounding.ToEven);
-    }
+    private static long ToStripeMinorUnits(Money amount) =>
+        (long)Math.Round(
+            amount.Amount * 100m,
+            MidpointRounding.ToEven);
 }
