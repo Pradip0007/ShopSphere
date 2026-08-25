@@ -45,6 +45,8 @@ using Polly;
 using ShopSphere.Domain.Reviews;
 using ShopSphere.Infrastructure.Reviews;
 using ShopSphere.Api.Features.Reviews;
+using ShopSphere.Infrastructure.Audit;
+using ShopSphere.Api.Features.Admin;
 using IDatabase = StackExchange.Redis.IDatabase;
 
 
@@ -55,7 +57,7 @@ builder.AddServiceDefaults();
 builder.Services.AddShopSphereRedis(builder.Configuration);
 builder.Services.AddShopSphereCart();
 builder.Services.AddShopSphereMessaging(builder.Configuration);
-
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddDbContext<OutboxDbContext>((sp, o) =>
 {
     var connectionString = builder.Configuration.GetConnectionString("outbox")
@@ -64,6 +66,7 @@ builder.Services.AddDbContext<OutboxDbContext>((sp, o) =>
     o.AddInterceptors(sp.GetRequiredService<OutboxSaveInterceptor>());
 });
 builder.Services.AddScoped<OutboxSaveInterceptor>();
+builder.Services.AddScoped<AuditInterceptor>();
 
 builder.Services
     .AddHealthChecks()
@@ -306,6 +309,10 @@ if (app.Environment.IsDevelopment())
 
         return Results.Ok(payload);
     });
+
+    app.MapGet("/api/v1/admin/audit", AuditQuery.HandleAsync)
+    .RequireAuthorization("admin")
+    .WithTags("Admin Audit");
 }
 
 ApiVersionSet apiVersionSet =
