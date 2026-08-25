@@ -22,14 +22,24 @@ public static class MassTransitServiceCollectionExtensions
             x.AddConsumers(Assembly.GetExecutingAssembly());
 
             x.UsingRabbitMq((ctx, cfg) =>
-            {
-                cfg.Host(new Uri(connectionString));
-                cfg.ConfigureEndpoints(ctx);
+        {
+            cfg.Host(new Uri(connectionString));
 
-                // Reasonable defaults; Day 47 tunes these per consumer.
-                cfg.UseMessageRetry(r => r.Immediate(3));
-                cfg.PrefetchCount = 16;
-            });
+            cfg.UseMessageRetry(r => r.Exponential(
+                retryLimit: 5,
+                minInterval: TimeSpan.FromSeconds(1),
+                maxInterval: TimeSpan.FromSeconds(30),
+                intervalDelta: TimeSpan.FromSeconds(5)));
+
+            cfg.UseKillSwitch(ks => ks
+                .SetActivationThreshold(20)
+                .SetTripThreshold(0.15)
+                .SetRestartTimeout(TimeSpan.FromMinutes(1)));
+
+            cfg.PrefetchCount = 16;
+
+            cfg.ConfigureEndpoints(ctx);
+        });
         });
 
         return services;
