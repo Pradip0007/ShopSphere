@@ -9,6 +9,7 @@ using FluentValidation;
 using MediatR;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 using Scalar.AspNetCore;
@@ -20,6 +21,8 @@ using ShopSphere.Api.Features.Cart;
 using ShopSphere.Api.Features.Checkout;
 using ShopSphere.Api.Infrastructure;
 using ShopSphere.Api.Infrastructure.Cart;
+using ShopSphere.Api.Infrastructure.Ordering;
+using ShopSphere.Api.Infrastructure.Outbox;
 using ShopSphere.Api.Infrastructure.Redis;
 using ShopSphere.Api.Middleware;
 using StackExchange.Redis;
@@ -47,6 +50,16 @@ builder.AddServiceDefaults();
 builder.Services.AddShopSphereRedis(builder.Configuration);
 builder.Services.AddShopSphereCart();
 builder.Services.AddShopSphereMessaging(builder.Configuration);
+
+builder.Services.AddDbContext<OutboxDbContext>((sp, o) =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("outbox")
+        ?? "Data Source=shopsphere-outbox.db";
+    o.UseSqlite(connectionString);
+    o.AddInterceptors(sp.GetRequiredService<OutboxSaveInterceptor>());
+});
+builder.Services.AddScoped<OutboxSaveInterceptor>();
+builder.Services.AddSingleton<IDomainEventToIntegrationMapper, DomainEventToIntegrationMapper>();
 
 builder.Services
     .AddHealthChecks()
@@ -181,7 +194,7 @@ builder.Services.AddOpenApi(
             });
     });
 
-builder.Services.AddScoped<IOrderRepository, ShopSphere.Infrastructure.Persistence.SqlOrderRepository>();
+builder.Services.AddScoped<IOrderRepository, EfOrderRepository>();
 builder.Services.AddSingleton<IProcessedWebhookStore, InMemoryProcessedWebhookStore>();
 builder.Services.AddHttpContextAccessor();
 builder.Services
@@ -220,6 +233,11 @@ builder.Services.AddOptions<EmailOptions>()
 builder.Services.AddScoped<IEmailSender, MailKitEmailSender>();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    scope.ServiceProvider.GetRequiredService<OutboxDbContext>().Database.EnsureCreated();
+}
 
 app.UseExceptionHandler();
 

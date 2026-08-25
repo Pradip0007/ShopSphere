@@ -1,9 +1,10 @@
 using System.Reflection;
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
+using ShopSphere.Api.Infrastructure.Inventory;
+using ShopSphere.Api.Infrastructure.Outbox;
 using ShopSphere.Workers.Jobs;
 using StackExchange.Redis;
-using ShopSphere.Api.Infrastructure.Inventory;
-using ShopSphere.Workers.Jobs;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -43,10 +44,15 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
+builder.Services.AddDbContext<OutboxDbContext>(o =>
+    o.UseSqlite(builder.Configuration.GetConnectionString("outbox")
+        ?? "Data Source=shopsphere-outbox.db"));
+
 builder.Services.AddSingleton<IStockService, InMemoryStockService>();
 
 builder.Services.AddHostedService<AbandonedCartReminderJob>();
 builder.Services.AddHostedService<InventorySnapshotJob>();
+builder.Services.AddHostedService<OutboxDispatcherJob>();
 
 var host = builder.Build();
 

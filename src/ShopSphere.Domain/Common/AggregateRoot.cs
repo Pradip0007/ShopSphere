@@ -4,7 +4,7 @@ namespace ShopSphere.Domain.Common;
 /// Base for aggregate roots. Tracks unpublished domain events raised during
 /// this unit of work. The persistence layer drains them after SaveChanges.
 /// </summary>
-public abstract class AggregateRoot<TId> : Entity<TId>
+public abstract class AggregateRoot<TId> : Entity<TId>, IHasDomainEvents
     where TId : notnull
 {
     private readonly List<IDomainEvent> _domainEvents = [];
