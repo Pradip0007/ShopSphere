@@ -1,6 +1,6 @@
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using ShopSphere.Api.Infrastructure.Outbox;
+using ShopSphere.Infrastructure.Outbox;
 
 namespace ShopSphere.Workers.Jobs;
 

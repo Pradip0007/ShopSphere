@@ -22,7 +22,7 @@ using ShopSphere.Api.Features.Checkout;
 using ShopSphere.Api.Infrastructure;
 using ShopSphere.Api.Infrastructure.Cart;
 using ShopSphere.Api.Infrastructure.Ordering;
-using ShopSphere.Api.Infrastructure.Outbox;
+using ShopSphere.Infrastructure.Outbox;
 using ShopSphere.Api.Infrastructure.Redis;
 using ShopSphere.Api.Middleware;
 using StackExchange.Redis;
@@ -61,7 +61,6 @@ builder.Services.AddDbContext<OutboxDbContext>((sp, o) =>
     o.AddInterceptors(sp.GetRequiredService<OutboxSaveInterceptor>());
 });
 builder.Services.AddScoped<OutboxSaveInterceptor>();
-builder.Services.AddSingleton<IDomainEventToIntegrationMapper, DomainEventToIntegrationMapper>();
 
 builder.Services
     .AddHealthChecks()
@@ -247,6 +246,16 @@ builder.Services.AddOptions<EmailOptions>()
     .ValidateOnStart();
 
 builder.Services.AddScoped<IEmailSender, MailKitEmailSender>();
+
+builder.Services.Scan(scan => scan
+    .FromAssemblies(typeof(Program).Assembly)
+    .AddClasses(c => c.AssignableTo<IIntegrationEventMarker>())
+    .AsImplementedInterfaces()
+    .WithSingletonLifetime());
+
+builder.Services.AddSingleton<
+    IIntegrationEventMapperResolver,
+    IntegrationEventMapperResolver>();
 
 var app = builder.Build();
 

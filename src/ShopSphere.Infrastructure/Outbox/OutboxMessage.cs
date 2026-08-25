@@ -1,4 +1,4 @@
-namespace ShopSphere.Api.Infrastructure.Outbox;
+namespace ShopSphere.Infrastructure.Outbox;
 
 public sealed class OutboxMessage
 {

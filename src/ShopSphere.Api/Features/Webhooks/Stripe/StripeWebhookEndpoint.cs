@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Options;
-using ShopSphere.Api.Contracts.Events;
-using ShopSphere.Api.Infrastructure.Outbox;
+using ShopSphere.Contracts.Events;
+using ShopSphere.Infrastructure.Outbox;
 using ShopSphere.Api.Infrastructure.Payments;
 using Stripe;
 

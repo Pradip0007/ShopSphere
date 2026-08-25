@@ -1,4 +1,4 @@
-namespace ShopSphere.Api.Contracts.Events;
+namespace ShopSphere.Contracts.Events;
 
 public sealed record InventoryReserved(
     Guid OrderId,

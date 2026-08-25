@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using ShopSphere.Api.Infrastructure.Outbox;
+using ShopSphere.Infrastructure.Outbox;
 using ShopSphere.Domain.Ordering;
 
 namespace ShopSphere.Api.Infrastructure.Ordering;

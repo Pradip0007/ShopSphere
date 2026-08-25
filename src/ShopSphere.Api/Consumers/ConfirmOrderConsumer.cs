@@ -1,6 +1,6 @@
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using ShopSphere.Api.Contracts.Events;
+using ShopSphere.Contracts.Events;
 using ShopSphere.Api.Infrastructure.Messaging;
 using ShopSphere.Domain.Ordering;
 using ShopSphere.Domain.Users;

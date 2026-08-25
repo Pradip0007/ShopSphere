@@ -1,8 +1,8 @@
 using System.Reflection;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using ShopSphere.Api.Infrastructure.Inventory;
-using ShopSphere.Api.Infrastructure.Outbox;
+using ShopSphere.Infrastructure.Inventory;
+using ShopSphere.Infrastructure.Outbox;
 using ShopSphere.Workers.Jobs;
 using StackExchange.Redis;
 

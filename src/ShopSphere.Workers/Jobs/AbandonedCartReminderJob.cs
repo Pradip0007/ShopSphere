@@ -1,5 +1,5 @@
 using MassTransit;
-using ShopSphere.Api.Contracts.Events;
+using ShopSphere.Contracts.Events;
 using StackExchange.Redis;
 
 namespace ShopSphere.Workers.Jobs;

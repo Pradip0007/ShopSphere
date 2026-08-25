@@ -1,4 +1,4 @@
-using ShopSphere.Api.Infrastructure.Inventory;
+using ShopSphere.Infrastructure.Inventory;
 using StackExchange.Redis;
 
 namespace ShopSphere.Workers.Jobs;

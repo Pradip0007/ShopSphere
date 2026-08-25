@@ -20,7 +20,8 @@
   <ItemGroup>
     <ProjectReference Include="..\ShopSphere.ServiceDefaults\ShopSphere.ServiceDefaults.csproj" />
     <ProjectReference Include="..\ShopSphere.Domain\ShopSphere.Domain.csproj" />
-    <ProjectReference Include="..\ShopSphere.Api\ShopSphere.Api.csproj" />
+    <ProjectReference Include="..\ShopSphere.Contracts\ShopSphere.Contracts.csproj" />
+    <ProjectReference Include="..\ShopSphere.Infrastructure\ShopSphere.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

@@ -51,8 +51,14 @@ public sealed class Order : AggregateRoot<OrderId>
             order._items.Add(line);
         }
 
-        order.Subtotal = lines.Aggregate(new Money(0, currency), (acc, l) => acc + l.LineTotal);
-        order.Raise(new OrderPlacedEvent(order.Id, userId, order.Subtotal, order._items.Count, order.PlacedAtUtc));
+        order.Subtotal = lines.Aggregate(
+            new Money(0, currency),
+            (acc, l) => acc + l.LineTotal);
+
+        order.Raise(new OrderPlacedEvent(
+            order,
+            order.PlacedAtUtc));
+
         return order;
     }
 
