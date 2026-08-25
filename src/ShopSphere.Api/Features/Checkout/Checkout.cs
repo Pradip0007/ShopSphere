@@ -1,10 +1,8 @@
 using System.Security.Claims;
-using MassTransit;
 using ShopSphere.Api.Features.Cart;
 using ShopSphere.Domain.Cart;
 using ShopSphere.Domain.Catalog;
 using ShopSphere.Domain.Ordering;
-using ShopSphere.Api.Contracts.Events;
 
 namespace ShopSphere.Api.Features.Checkout;
 
@@ -22,7 +20,6 @@ public static class CheckoutFeature
         ICartRepository carts,
         IProductRepository products,
         IOrderRepository orders,
-        IBus bus,
         CancellationToken ct)
     {
         var userIdClaim = http.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
@@ -69,28 +66,8 @@ public static class CheckoutFeature
         await orders.SaveChangesAsync(ct);
         await carts.ClearAsync(cartKey, ct);
 
-
-        // Publish integration event AFTER persistence — the reader must see the row.
-        // Day 45 replaces this direct publish with the transactional outbox.
-        await bus.Publish(ToIntegrationEvent(order), ct);
-
         return Results.Created(
             $"/api/v1/orders/{order.Id.Value:D}",
             new Response(order.Id.Value, order.Subtotal.Amount, order.Subtotal.Currency, order.Items.Count));
     }
-
-    private static OrderPlaced ToIntegrationEvent(Order order) => new(
-        OrderId: order.Id.Value,
-        UserId: order.UserId,
-        Total: order.Subtotal.Amount,
-        Currency: order.Subtotal.Currency,
-        PlacedAtUtc: order.PlacedAtUtc,
-        Lines: order.Items
-            .Select(i => new OrderPlacedLine(
-                i.ProductId.Value,
-                i.Sku,
-                i.ProductNameSnapshot,
-                i.UnitPriceSnapshot.Amount,
-                i.Quantity))
-            .ToArray());
 }
