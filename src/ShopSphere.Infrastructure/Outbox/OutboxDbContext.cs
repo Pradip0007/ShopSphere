@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ShopSphere.Domain.Catalog;
 using ShopSphere.Domain.Ordering;
+using ShopSphere.Domain.Reviews;
 
 namespace ShopSphere.Infrastructure.Outbox;
 
@@ -8,6 +9,7 @@ public sealed class OutboxDbContext(DbContextOptions<OutboxDbContext> options) :
 {
     public DbSet<OutboxMessage> Outbox => Set<OutboxMessage>();
     public DbSet<Order> Orders => Set<Order>();
+    public DbSet<Review> Reviews => Set<Review>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -76,6 +78,55 @@ public sealed class OutboxDbContext(DbContextOptions<OutboxDbContext> options) :
                 m.Property(p => p.Currency).HasColumnName("UnitPriceCurrency").HasMaxLength(3);
             });
             i.Property(x => x.Quantity).IsRequired();
+        });
+
+        modelBuilder.Entity<Review>(r =>
+        {
+            r.ToTable("Reviews");
+
+            r.HasKey(x => x.Id);
+
+            r.Property(x => x.Id)
+                .HasConversion(
+                    id => id.Value,
+                    value => new ReviewId(value));
+
+            r.Property(x => x.UserId)
+                .IsRequired();
+
+            r.Property(x => x.ProductId)
+                .HasConversion(
+                    id => id.Value,
+                    value => new ProductId(value))
+                .IsRequired();
+
+            r.Property(x => x.Rating)
+                .IsRequired();
+
+            r.Property(x => x.Body)
+                .HasMaxLength(4000)
+                .IsRequired();
+
+            r.Property(x => x.Status)
+                .HasConversion<int>()
+                .IsRequired();
+
+            r.Property(x => x.PostedAtUtc)
+                .IsRequired();
+
+            r.Property(x => x.ModeratedAtUtc);
+
+            r.Property(x => x.ModeratorUserId);
+
+            r.Property(x => x.RejectionReason)
+                .HasMaxLength(1000);
+
+            // One review per user per product.
+            r.HasIndex(x => new { x.UserId, x.ProductId })
+                .IsUnique();
+
+            // Useful for public product review queries.
+            r.HasIndex(x => new { x.ProductId, x.Status });
         });
     }
 }

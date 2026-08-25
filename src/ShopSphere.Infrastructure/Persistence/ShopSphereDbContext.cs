@@ -18,7 +18,7 @@ public sealed class ShopSphereDbContext(DbContextOptions<ShopSphereDbContext> op
     public DbSet<Permission> Permissions => Set<Permission>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
-
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
