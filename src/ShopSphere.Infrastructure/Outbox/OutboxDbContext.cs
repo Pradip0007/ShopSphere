@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ShopSphere.Domain.Catalog;
 using ShopSphere.Domain.Ordering;
 using ShopSphere.Domain.Reviews;
+using ShopSphere.Infrastructure.Audit;
 
 namespace ShopSphere.Infrastructure.Outbox;
 
@@ -10,6 +11,7 @@ public sealed class OutboxDbContext(DbContextOptions<OutboxDbContext> options) :
     public DbSet<OutboxMessage> Outbox => Set<OutboxMessage>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<Review> Reviews => Set<Review>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -127,6 +129,37 @@ public sealed class OutboxDbContext(DbContextOptions<OutboxDbContext> options) :
 
             // Useful for public product review queries.
             r.HasIndex(x => new { x.ProductId, x.Status });
+        });
+
+        modelBuilder.Entity<AuditLog>(a =>
+        {
+            a.ToTable("AuditLogs");
+
+            a.HasKey(x => x.Id);
+
+            a.Property(x => x.EntityType)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            a.Property(x => x.EntityId)
+                .HasMaxLength(64)
+                .IsRequired();
+
+            a.Property(x => x.Action)
+                .HasConversion<int>();
+
+            a.Property(x => x.PayloadJson)
+                .IsRequired();
+
+            a.Property(x => x.IpAddress)
+                .HasMaxLength(64);
+
+            a.Property(x => x.UserAgent)
+                .HasMaxLength(500);
+
+            a.HasIndex(x => new { x.EntityType, x.EntityId });
+
+            a.HasIndex(x => x.TimestampUtc);
         });
     }
 }
