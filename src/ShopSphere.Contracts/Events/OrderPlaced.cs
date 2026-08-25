@@ -1,4 +1,4 @@
-namespace ShopSphere.Api.Contracts.Events;
+namespace ShopSphere.Contracts.Events;
 
 /// <summary>
 /// Published when an order is placed. All types are primitive on purpose —

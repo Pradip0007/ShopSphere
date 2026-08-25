@@ -17,4 +17,8 @@
     <ProjectReference Include="..\ShopSphere.Domain\ShopSphere.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ShopSphere.Contracts\ShopSphere.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

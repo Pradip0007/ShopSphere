@@ -1,5 +1,5 @@
 using MassTransit;
-using ShopSphere.Api.Contracts.Events;
+using ShopSphere.Contracts.Events;
 using ShopSphere.Api.Infrastructure.Messaging;
 using ShopSphere.Domain.Common;
 using ShopSphere.Domain.Ordering;

@@ -1,4 +1,4 @@
-namespace ShopSphere.Api.Infrastructure.Inventory;
+namespace ShopSphere.Infrastructure.Inventory;
 
 public interface IStockService
 {

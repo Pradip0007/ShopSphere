@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
-namespace ShopSphere.Api.Infrastructure.Inventory;
+namespace ShopSphere.Infrastructure.Inventory;
 
 public sealed class InMemoryStockService : IStockService
 {

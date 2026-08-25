@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ShopSphere.Domain.Catalog;
 using ShopSphere.Domain.Ordering;
 
-namespace ShopSphere.Api.Infrastructure.Outbox;
+namespace ShopSphere.Infrastructure.Outbox;
 
 public sealed class OutboxDbContext(DbContextOptions<OutboxDbContext> options) : DbContext(options)
 {
