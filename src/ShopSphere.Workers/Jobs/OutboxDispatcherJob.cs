@@ -51,9 +51,12 @@ public sealed class OutboxDispatcherJob : BackgroundService
 
         var pending = await db.Outbox
             .Where(m => m.ProcessedAtUtc == null)
+            .ToListAsync(ct);
+
+        pending = pending
             .OrderBy(m => m.OccurredAtUtc)
             .Take(BatchSize)
-            .ToListAsync(ct);
+            .ToList();
 
         if (pending.Count == 0) return;
 

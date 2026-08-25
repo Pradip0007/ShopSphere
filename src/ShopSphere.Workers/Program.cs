@@ -46,7 +46,7 @@ builder.Services.AddMassTransit(x =>
 
 builder.Services.AddDbContext<OutboxDbContext>(o =>
     o.UseSqlite(builder.Configuration.GetConnectionString("outbox")
-        ?? "Data Source=shopsphere-outbox.db"));
+        ?? "Data Source=../shopsphere-outbox.db"));
 
 builder.Services.AddSingleton<IStockService, InMemoryStockService>();
 

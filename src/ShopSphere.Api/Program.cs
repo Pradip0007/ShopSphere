@@ -54,7 +54,7 @@ builder.Services.AddShopSphereMessaging(builder.Configuration);
 builder.Services.AddDbContext<OutboxDbContext>((sp, o) =>
 {
     var connectionString = builder.Configuration.GetConnectionString("outbox")
-        ?? "Data Source=shopsphere-outbox.db";
+    ?? "Data Source=../shopsphere-outbox.db";
     o.UseSqlite(connectionString);
     o.AddInterceptors(sp.GetRequiredService<OutboxSaveInterceptor>());
 });
