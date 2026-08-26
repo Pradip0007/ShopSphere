@@ -58,15 +58,6 @@ builder.Services.AddShopSphereRedis(builder.Configuration);
 builder.Services.AddShopSphereCart();
 builder.Services.AddShopSphereMessaging(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddDbContext<OutboxDbContext>((sp, o) =>
-{
-    var connectionString = builder.Configuration.GetConnectionString("outbox")
-    ?? "Data Source=../shopsphere-outbox.db";
-    o.UseSqlite(connectionString);
-    o.AddInterceptors(sp.GetRequiredService<OutboxSaveInterceptor>());
-});
-builder.Services.AddScoped<OutboxSaveInterceptor>();
-builder.Services.AddScoped<AuditInterceptor>();
 
 builder.Services
     .AddHealthChecks()
@@ -266,11 +257,6 @@ builder.Services.AddSingleton<
     IntegrationEventMapperResolver>();
 
 var app = builder.Build();
-
-using (var scope = app.Services.CreateScope())
-{
-    scope.ServiceProvider.GetRequiredService<OutboxDbContext>().Database.EnsureCreated();
-}
 
 app.UseExceptionHandler();
 

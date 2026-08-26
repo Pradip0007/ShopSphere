@@ -26,6 +26,8 @@ var api = builder.AddProject<Projects.ShopSphere_Api>("api")
 
 builder.AddProject<Projects.ShopSphere_Workers>("workers")
     .WithReference(cache)
-    .WithReference(rabbit);
+    .WithReference(rabbit)
+    .WithReference(sql)
+    .WaitFor(sql);
 
 builder.Build().Run();

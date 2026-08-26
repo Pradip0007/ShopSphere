@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Options;
 using ShopSphere.Contracts.Events;
 using ShopSphere.Infrastructure.Outbox;
+using ShopSphere.Infrastructure.Persistence;
 using ShopSphere.Api.Infrastructure.Payments;
 using Stripe;
 
@@ -22,7 +23,7 @@ public static class StripeWebhookEndpoint
         HttpContext http,
         IOptions<StripeOptions> options,
         IProcessedWebhookStore processed,
-        OutboxDbContext outbox,
+        ShopSphereDbContext db,
         ILoggerFactory loggerFactory,
         CancellationToken ct)
     {
@@ -67,14 +68,14 @@ public static class StripeWebhookEndpoint
             case "payment_intent.succeeded":
                 if (stripeEvent.Data.Object is PaymentIntent pi)
                 {
-                    await OnSucceededAsync(pi, outbox, log, ct);
+                    await OnSucceededAsync(pi, db, log, ct);
                 }
                 break;
 
             case "payment_intent.payment_failed":
                 if (stripeEvent.Data.Object is PaymentIntent piFailed)
                 {
-                    await OnFailedAsync(piFailed, outbox, log, ct);
+                    await OnFailedAsync(piFailed, db, log, ct);
                 }
                 break;
 
@@ -88,7 +89,7 @@ public static class StripeWebhookEndpoint
 
     private static async Task OnSucceededAsync(
         PaymentIntent pi,
-        OutboxDbContext outbox,
+        ShopSphereDbContext db,
         ILogger log,
         CancellationToken ct)
     {
@@ -102,13 +103,13 @@ public static class StripeWebhookEndpoint
         var currency = pi.Currency.ToUpperInvariant();
         var amount = pi.Amount / 100m;
         var evt = new PaymentCaptured(orderId, pi.Id, amount, currency, DateTimeOffset.UtcNow);
-        await EnqueueOutboxAsync(outbox, evt, ct);
-        await outbox.SaveChangesAsync(ct);
+        await EnqueueOutboxAsync(db, evt, ct);
+        await db.SaveChangesAsync(ct);
     }
 
     private static async Task OnFailedAsync(
         PaymentIntent pi,
-        OutboxDbContext outbox,
+        ShopSphereDbContext db,
         ILogger log,
         CancellationToken ct)
     {
@@ -121,11 +122,11 @@ public static class StripeWebhookEndpoint
 
         var reason = pi.LastPaymentError?.Message ?? "Unknown Stripe decline";
         var evt = new PaymentFailed(orderId, reason, DateTimeOffset.UtcNow);
-        await EnqueueOutboxAsync(outbox, evt, ct);
-        await outbox.SaveChangesAsync(ct);
+        await EnqueueOutboxAsync(db, evt, ct);
+        await db.SaveChangesAsync(ct);
     }
 
-    private static async Task EnqueueOutboxAsync<T>(OutboxDbContext outbox, T message, CancellationToken ct)
+    private static async Task EnqueueOutboxAsync<T>(ShopSphereDbContext db, T message, CancellationToken ct)
     {
         var payload = JsonSerializer.Serialize(message, message!.GetType());
         var entry = new OutboxMessage
@@ -136,7 +137,7 @@ public static class StripeWebhookEndpoint
             OccurredAtUtc = DateTimeOffset.UtcNow
         };
 
-        await outbox.Outbox.AddAsync(entry, ct);
+        await db.OutboxMessages.AddAsync(entry, ct);
     }
 
     private static Guid ExtractOrderId(PaymentIntent pi)

@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ShopSphere.Domain.Common;
 using ShopSphere.Infrastructure.Persistence;
+using ShopSphere.Infrastructure.Audit;
+using ShopSphere.Infrastructure.Outbox;
 using ShopSphere.Domain.Users;
 using ShopSphere.Infrastructure.Security;
 using ShopSphere.Domain.Catalog;
@@ -15,6 +17,11 @@ public static class DependencyInjection
         this IServiceCollection services,
         string connectionStringName = "shopsphere")
     {
+        services.AddHttpContextAccessor();
+        services.AddScoped<OutboxSaveInterceptor>();
+        services.AddScoped<AuditInterceptor>();
+        services.AddSingleton<IIntegrationEventMapperResolver, IntegrationEventMapperResolver>();
+
         services.AddDbContext<ShopSphereDbContext>((sp, options) =>
         {
             var config = sp.GetRequiredService<IConfiguration>();
@@ -29,6 +36,9 @@ public static class DependencyInjection
             }
 
             options.UseSqlServer(cs);
+            options.AddInterceptors(
+                sp.GetRequiredService<OutboxSaveInterceptor>(),
+                sp.GetRequiredService<AuditInterceptor>());
         });
 
         services.AddScoped<IProductRepository, ProductRepository>();

@@ -2,11 +2,11 @@ using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore;
 using ShopSphere.Domain.Catalog;
 using ShopSphere.Domain.Reviews;
-using ShopSphere.Infrastructure.Outbox;
+using ShopSphere.Infrastructure.Persistence;
 
 namespace ShopSphere.Infrastructure.Reviews;
 
-public sealed class EfReviewRepository(OutboxDbContext db) : IReviewRepository
+public sealed class EfReviewRepository(ShopSphereDbContext db) : IReviewRepository
 {
     public Task<Review?> FindAsync(ReviewId id, CancellationToken ct = default) =>
         db.Reviews.FirstOrDefaultAsync(r => r.Id == id, ct);

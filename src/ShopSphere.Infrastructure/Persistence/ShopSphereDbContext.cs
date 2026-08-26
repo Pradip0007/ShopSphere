@@ -2,7 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using ShopSphere.Domain.Catalog;
 using ShopSphere.Domain.Inventory;
 using ShopSphere.Domain.Users;
-using ShopSphere.Domain.Ordering;  
+using ShopSphere.Domain.Ordering;
+using ShopSphere.Domain.Reviews;
+using ShopSphere.Infrastructure.Audit;
+using ShopSphere.Infrastructure.Outbox;
 
 namespace ShopSphere.Infrastructure.Persistence;
 
@@ -18,6 +21,9 @@ public sealed class ShopSphereDbContext(DbContextOptions<ShopSphereDbContext> op
     public DbSet<Permission> Permissions => Set<Permission>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<Review> Reviews => Set<Review>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

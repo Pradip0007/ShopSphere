@@ -7,6 +7,8 @@ public sealed class OutboxMessage
     public string PayloadJson { get; init; } = default!;
     public DateTimeOffset OccurredAtUtc { get; init; }
     public DateTimeOffset? ProcessedAtUtc { get; set; }
+    public DateTimeOffset? ClaimedAtUtc { get; set; }
+    public string? ClaimedBy { get; set; }
     public int Attempts { get; set; }
     public string? LastError { get; set; }
 }

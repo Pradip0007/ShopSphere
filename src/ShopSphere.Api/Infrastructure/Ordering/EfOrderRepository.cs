@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using ShopSphere.Infrastructure.Outbox;
+using ShopSphere.Infrastructure.Persistence;
 using ShopSphere.Domain.Ordering;
 
 namespace ShopSphere.Api.Infrastructure.Ordering;
 
-public sealed class EfOrderRepository(OutboxDbContext db) : IOrderRepository
+public sealed class EfOrderRepository(ShopSphereDbContext db) : IOrderRepository
 {
     public async Task AddAsync(Order order, CancellationToken ct = default)
     {
