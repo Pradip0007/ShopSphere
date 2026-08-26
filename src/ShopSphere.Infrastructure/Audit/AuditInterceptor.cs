@@ -12,6 +12,12 @@ public sealed class AuditInterceptor(
     IHttpContextAccessor httpContextAccessor,
     ILogger<AuditInterceptor> logger) : SaveChangesInterceptor
 {
+    private static readonly Dictionary<string, HashSet<string>> Redact = new(StringComparer.Ordinal)
+    {
+        ["User"] = new(StringComparer.Ordinal) { "PasswordHash" },
+        ["RefreshToken"] = new(StringComparer.Ordinal) { "TokenHash", "Token" }
+    };
+
     private static readonly HashSet<string> ExcludedEntityTypes = new(StringComparer.Ordinal)
     {
         // Don't audit the audit log itself — infinite loop.
@@ -98,29 +104,46 @@ public sealed class AuditInterceptor(
         var pk = entry.Metadata.FindPrimaryKey();
         if (pk is null) return string.Empty;
         var parts = pk.Properties
-            .Select(p => entry.Property(p.Name).CurrentValue?.ToString() ?? "")
+            .Select(p => entry.Property(p.Name).CurrentValue switch
+            {
+                null => "",
+                var value => value.GetType().GetProperty("Value")?.GetValue(value)?.ToString()
+                    ?? value.ToString()
+                    ?? ""
+            })
             .ToArray();
         return string.Join(":", parts);
     }
 
     private static string SerializeEntry(EntityEntry entry, AuditAction action)
     {
+        var redact = Redact.TryGetValue(entry.Metadata.ClrType.Name, out var fields)
+            ? fields
+            : null;
         var props = new Dictionary<string, object?>();
         foreach (var p in entry.Properties)
         {
+            object? Redacted(object? value) => redact?.Contains(p.Metadata.Name) == true
+                ? "***redacted***"
+                : value;
+
             switch (action)
             {
                 case AuditAction.Create:
-                    props[p.Metadata.Name] = p.CurrentValue;
+                    props[p.Metadata.Name] = Redacted(p.CurrentValue);
                     break;
                 case AuditAction.Update:
                     if (p.IsModified)
                     {
-                        props[p.Metadata.Name] = new { From = p.OriginalValue, To = p.CurrentValue };
+                        props[p.Metadata.Name] = new
+                        {
+                            From = Redacted(p.OriginalValue),
+                            To = Redacted(p.CurrentValue)
+                        };
                     }
                     break;
                 case AuditAction.Delete:
-                    props[p.Metadata.Name] = p.OriginalValue;
+                    props[p.Metadata.Name] = Redacted(p.OriginalValue);
                     break;
             }
         }

@@ -1,13 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using ShopSphere.Infrastructure.Audit;
-using ShopSphere.Infrastructure.Outbox;
+using ShopSphere.Infrastructure.Persistence;
 
 namespace ShopSphere.Api.Features.Admin;
 
 public static class AuditQuery
 {
     public static async Task<IResult> HandleAsync(
-        OutboxDbContext db,
+        ShopSphereDbContext db,
         string? entityType,
         string? entityId,
         DateTimeOffset? fromUtc,

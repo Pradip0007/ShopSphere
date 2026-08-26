@@ -3,6 +3,7 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using ShopSphere.Infrastructure.Inventory;
 using ShopSphere.Infrastructure.Outbox;
+using ShopSphere.Infrastructure;
 using ShopSphere.Workers.Jobs;
 using StackExchange.Redis;
 
@@ -81,14 +82,8 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
-// ------------------------------------------------------------
-// Outbox
-// ------------------------------------------------------------
-
-builder.Services.AddDbContext<OutboxDbContext>(o =>
-    o.UseSqlite(
-        builder.Configuration.GetConnectionString("outbox")
-        ?? "Data Source=../shopsphere-outbox.db"));
+builder.Services.AddInfrastructure();
+builder.Services.AddSingleton(TimeProvider.System);
 
 // ------------------------------------------------------------
 // Inventory
