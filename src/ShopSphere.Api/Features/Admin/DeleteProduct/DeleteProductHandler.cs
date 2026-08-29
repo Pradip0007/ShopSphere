@@ -12,9 +12,11 @@ public sealed class DeleteProductHandler(ShopSphereDbContext db)
         DeleteProductCommand request,
         CancellationToken cancellationToken)
     {
+        ProductId productId = new(request.Id);
+
         Product product = await db.Products
             .FirstOrDefaultAsync(
-                p => p.Id.Value == request.Id,
+                p => p.Id == productId,
                 cancellationToken)
             ?? throw new KeyNotFoundException(
                 $"Product {request.Id} not found.");
