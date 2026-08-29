@@ -123,7 +123,10 @@ builder.Services
         Permissions.OrdersManage,
         p => p.RequireClaim(
             "permission",
-            Permissions.OrdersManage));
+            Permissions.OrdersManage))
+    .AddPolicy(
+        "admin",
+        p => p.RequireRole("admin"));
 
 JwtOptions jwt =
     builder.Configuration
