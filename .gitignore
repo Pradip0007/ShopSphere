@@ -57,3 +57,5 @@ TestResults/
 *.trx
 *.coverage
 coverage.cobertura.xml
+# TanStack Router generated tree
+src/web/src/routeTree.gen.ts

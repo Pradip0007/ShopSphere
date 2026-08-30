@@ -1,7 +1,8 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.11/schema.json",
   "files": {
-    "includes": ["**", "!!**/dist"]
+    "includes": ["**", "!!**/dist", "!!src/routeTree.gen.ts"],
+    "ignoreUnknown": true
   },
   "formatter": {
     "enabled": true,
