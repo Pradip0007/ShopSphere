@@ -1,15 +1,16 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 import { store } from '@/store';
+import { selectIsAuthenticated } from '@/store/auth.slice';
 
 export const Route = createFileRoute('/_authed')({
   beforeLoad: ({ location }) => {
-    const accessToken = store.getState().auth.accessToken;
+    const isAuthed = selectIsAuthenticated(store.getState());
 
-    if (!accessToken) {
+    if (!isAuthed) {
       throw redirect({
         to: '/login',
         search: {
-          redirect: location.pathname,
+          redirect: location.pathname + location.searchStr,
         },
       });
     }
@@ -19,11 +20,5 @@ export const Route = createFileRoute('/_authed')({
 });
 
 function AuthedLayout(): React.JSX.Element {
-  return (
-    <section>
-      <p style={{ fontSize: '0.85rem', opacity: 0.6 }}>[authed area]</p>
-
-      <Outlet />
-    </section>
-  );
+  return <Outlet />;
 }
