@@ -36,53 +36,61 @@ function RootLayout(): React.JSX.Element {
 
   return (
     <>
-      <header
-        style={{
-          display: 'flex',
-          gap: '1rem',
-          alignItems: 'center',
-          padding: '1rem 2rem',
-          borderBottom: '1px solid #ddd',
-        }}
-      >
-        <Link to="/">Home</Link>
+      <header className="flex items-center gap-4 border-b border-[var(--color-border)] px-8 py-4">
+        <Link to="/" className="hover:text-brand-600">
+          Home
+        </Link>
 
-        <Link to="/products">Products</Link>
+        <Link to="/products" className="hover:text-brand-600">
+          Products
+        </Link>
 
-        {user && <Link to="/cart">Cart</Link>}
+        {user && (
+          <Link to="/cart" className="hover:text-brand-600">
+            Cart
+          </Link>
+        )}
 
-        {user && <Link to="/orders">Orders</Link>}
+        {user && (
+          <Link to="/orders" className="hover:text-brand-600">
+            Orders
+          </Link>
+        )}
 
-        {isAdmin && <Link to="/admin">Admin</Link>}
+        {isAdmin && (
+          <Link to="/admin" className="hover:text-brand-600">
+            Admin
+          </Link>
+        )}
 
-        <div
-          style={{
-            marginLeft: 'auto',
-            display: 'flex',
-            gap: '0.75rem',
-          }}
-        >
+        <div className="ml-auto flex items-center gap-3">
           {user ? (
             <>
               <span>Hi, {user.email}</span>
 
-              <button type="button" onClick={handleLogout}>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded-md border border-[var(--color-border)] px-3 py-1.5 text-sm hover:bg-[var(--color-surface-muted)]"
+              >
                 Sign out
               </button>
             </>
           ) : (
             <>
-              <Link to="/login" search={{}}>
+              <Link to="/login" search={{}} className="hover:text-brand-600">
                 Login
               </Link>
 
-              <Link to="/register">Register</Link>
+              <Link to="/register" className="hover:text-brand-600">
+                Register
+              </Link>
             </>
           )}
         </div>
       </header>
 
-      <main style={{ padding: '2rem' }}>
+      <main className="p-8">
         <Outlet />
       </main>
 
