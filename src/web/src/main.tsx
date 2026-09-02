@@ -1,24 +1,14 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { createRouter, RouterProvider } from '@tanstack/react-router';
+import { RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { routeTree } from '@/routeTree.gen';
+import { Provider as ReduxProvider } from 'react-redux';
+import { bootstrapAuth } from '@/app/boot';
+import { router } from '@/router';
 import { queryClient } from '@/shared/lib/query-client';
+import { store } from '@/store';
 import '@/index.css';
-
-const router = createRouter({
-  routeTree,
-  defaultPreload: 'intent',
-  defaultPreloadStaleTime: 0,
-  context: { queryClient },
-});
-
-declare module '@tanstack/react-router' {
-  interface Register {
-    router: typeof router;
-  }
-}
 
 const rootEl = document.getElementById('root');
 
@@ -26,11 +16,16 @@ if (!rootEl) {
   throw new Error('#root not found');
 }
 
+await bootstrapAuth();
+
 createRoot(rootEl).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
-    </QueryClientProvider>
+    <ReduxProvider store={store}>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+
+        {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+      </QueryClientProvider>
+    </ReduxProvider>
   </StrictMode>,
 );
