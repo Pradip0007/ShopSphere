@@ -1,11 +1,15 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { type FormEvent, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { login } from '@/features/auth/api';
-import { router } from '@/router';
+import { applyServerErrors } from '@/features/auth/apply-server-errors';
+import { type LoginFormValues, loginSchema } from '@/features/auth/schemas';
 import { getUserFromAccessToken } from '@/shared/lib/jwt';
-import { store } from '@/store';
+import { FormField } from '@/shared/ui/FormField';
 import { setCredentials } from '@/store/auth.slice';
+import { useAppDispatch } from '@/store/hooks';
 
 const loginSearchSchema = z.object({
   redirect: z.string().optional(),
@@ -18,27 +22,33 @@ export const Route = createFileRoute('/login')({
 
 function LoginPage(): React.JSX.Element {
   const { redirect } = Route.useSearch();
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
-  const [email, setEmail] = useState('smoketest2026@gmail.com');
-  const [password, setPassword] = useState('SmokeTest@12345');
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
-    event.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
 
-    setError(null);
-    setIsSubmitting(true);
+  async function onSubmit(values: LoginFormValues): Promise<void> {
+    setSubmitError(null);
 
     try {
-      const response = await login({
-        email,
-        password,
-      });
+      const response = await login(values);
 
       const user = getUserFromAccessToken(response.accessToken);
 
-      store.dispatch(
+      dispatch(
         setCredentials({
           accessToken: response.accessToken,
           refreshToken: response.refreshToken,
@@ -46,76 +56,53 @@ function LoginPage(): React.JSX.Element {
         }),
       );
 
-      if (redirect) {
-        await router.navigate({
-          to: redirect,
-        });
-      } else {
-        await router.navigate({
-          to: '/',
-        });
+      await navigate({
+        to: redirect ?? '/',
+      });
+    } catch (error) {
+      const generic = applyServerErrors(error, setError);
+
+      if (generic) {
+        setSubmitError(generic);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to sign in.');
-    } finally {
-      setIsSubmitting(false);
     }
   }
 
   return (
-    <section
-      style={{
-        maxWidth: '28rem',
-        margin: '3rem auto',
-      }}
-    >
-      <h1>Login</h1>
+    <section style={{ maxWidth: 400 }}>
+      <h1>Sign in</h1>
 
       {redirect && <p style={{ opacity: 0.6 }}>Sign in to continue to {redirect}</p>}
 
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
         style={{
           display: 'grid',
-          gap: '1rem',
-          marginTop: '1.5rem',
+          gap: 16,
         }}
       >
-        <label
-          style={{
-            display: 'grid',
-            gap: '0.35rem',
-          }}
-        >
-          <span>Email</span>
+        <FormField
+          label="Email"
+          type="email"
+          autoComplete="email"
+          {...register('email')}
+          error={errors.email?.message}
+        />
 
-          <input
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            autoComplete="email"
-            required
-          />
-        </label>
+        <FormField
+          label="Password"
+          type="password"
+          autoComplete="current-password"
+          {...register('password')}
+          error={errors.password?.message}
+        />
 
-        <label
-          style={{
-            display: 'grid',
-            gap: '0.35rem',
-          }}
-        >
-          <span>Password</span>
-
-          <input
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            autoComplete="current-password"
-            required
-          />
-        </label>
-
-        {error && <p role="alert">{error}</p>}
+        {submitError && (
+          <div role="alert" style={{ color: '#c00' }}>
+            {submitError}
+          </div>
+        )}
 
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Signing in…' : 'Sign in'}
