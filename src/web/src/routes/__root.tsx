@@ -1,9 +1,9 @@
-import type { QueryClient } from '@tanstack/react-query';
+import { type QueryClient, useQueryClient } from '@tanstack/react-query';
 import { createRootRouteWithContext, Link, Outlet } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 import { logoutApi } from '@/features/auth/api';
 import { router } from '@/router';
-import { logout, selectAuth } from '@/store/auth.slice';
+import { logout, selectAuth, selectHasRole } from '@/store/auth.slice';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 export interface RouterContext {
@@ -16,13 +16,16 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootLayout(): React.JSX.Element {
   const { user } = useAppSelector(selectAuth);
+  const isAdmin = useAppSelector(selectHasRole('admin'));
   const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
 
   async function handleLogout(): Promise<void> {
     try {
       await logoutApi();
     } finally {
       dispatch(logout());
+      queryClient.clear();
 
       await router.navigate({
         to: '/login',
@@ -45,6 +48,12 @@ function RootLayout(): React.JSX.Element {
         <Link to="/">Home</Link>
 
         <Link to="/products">Products</Link>
+
+        {user && <Link to="/cart">Cart</Link>}
+
+        {user && <Link to="/orders">Orders</Link>}
+
+        {isAdmin && <Link to="/admin">Admin</Link>}
 
         <div
           style={{

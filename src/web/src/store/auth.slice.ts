@@ -70,3 +70,8 @@ export const selectAccessToken = (state: { auth: AuthState }): string | null =>
 
 export const selectIsAuthenticated = (state: { auth: AuthState }): boolean =>
   state.auth.accessToken !== null;
+
+export const selectHasRole =
+  (role: string) =>
+  (state: { auth: AuthState }): boolean =>
+    state.auth.user?.roles.includes(role) ?? false;
