@@ -69,19 +69,12 @@ function LoginPage(): React.JSX.Element {
   }
 
   return (
-    <section style={{ maxWidth: 400 }}>
+    <section className="max-w-[400px]">
       <h1>Sign in</h1>
 
-      {redirect && <p style={{ opacity: 0.6 }}>Sign in to continue to {redirect}</p>}
+      {redirect && <p className="opacity-60">Sign in to continue to {redirect}</p>}
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        noValidate
-        style={{
-          display: 'grid',
-          gap: 16,
-        }}
-      >
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="mt-6 grid gap-4">
         <FormField
           label="Email"
           type="email"
@@ -99,7 +92,7 @@ function LoginPage(): React.JSX.Element {
         />
 
         {submitError && (
-          <div role="alert" style={{ color: '#c00' }}>
+          <div role="alert" className="text-[var(--color-danger)]">
             {submitError}
           </div>
         )}

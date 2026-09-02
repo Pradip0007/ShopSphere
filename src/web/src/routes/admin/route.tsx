@@ -31,30 +31,22 @@ export const Route = createFileRoute('/admin')({
 
 function AdminLayout(): React.JSX.Element {
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: '220px 1fr',
-        gap: '1.5rem',
-      }}
-    >
-      <aside
-        style={{
-          borderRight: '1px solid #ddd',
-          paddingRight: '1rem',
-        }}
-      >
-        <h3 style={{ marginTop: 0 }}>Admin</h3>
+    <div className="grid grid-cols-[220px_1fr] gap-6">
+      <aside className="border-r border-[var(--color-border)] pr-4">
+        <h3 className="mt-0">Admin</h3>
 
-        <nav
-          style={{
-            display: 'grid',
-            gap: 8,
-          }}
-        >
-          <a href="/admin/products">Products</a>
-          <a href="/admin/orders">Orders</a>
-          <a href="/admin/users">Users</a>
+        <nav className="grid gap-2">
+          <a href="/admin/products" className="hover:text-brand-600">
+            Products
+          </a>
+
+          <a href="/admin/orders" className="hover:text-brand-600">
+            Orders
+          </a>
+
+          <a href="/admin/users" className="hover:text-brand-600">
+            Users
+          </a>
         </nav>
       </aside>
 

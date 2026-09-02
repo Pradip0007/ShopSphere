@@ -77,17 +77,10 @@ function RegisterPage(): React.JSX.Element {
   }
 
   return (
-    <section style={{ maxWidth: 400 }}>
+    <section className="max-w-[400px]">
       <h1>Create account</h1>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        noValidate
-        style={{
-          display: 'grid',
-          gap: 16,
-        }}
-      >
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="grid gap-4">
         <FormField
           label="Email"
           type="email"
@@ -121,7 +114,7 @@ function RegisterPage(): React.JSX.Element {
         />
 
         {submitError && (
-          <div role="alert" style={{ color: '#c00' }}>
+          <div role="alert" className="text-[var(--color-danger)]">
             {submitError}
           </div>
         )}
