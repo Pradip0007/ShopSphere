@@ -16,7 +16,10 @@ export interface LoginRequest {
 export interface RegisterRequest {
   email: string;
   password: string;
-  displayName: string;
+}
+
+export interface RegisterResponse {
+  userId: string;
 }
 
 export function login(req: LoginRequest): Promise<AuthResponse> {
@@ -27,8 +30,8 @@ export function login(req: LoginRequest): Promise<AuthResponse> {
   });
 }
 
-export function register(req: RegisterRequest): Promise<AuthResponse> {
-  return apiFetch<AuthResponse>('/api/v1/auth/register', {
+export function register(req: RegisterRequest): Promise<RegisterResponse> {
+  return apiFetch<RegisterResponse>('/api/v1/auth/register', {
     method: 'POST',
     json: req,
     skipAuth: true,
