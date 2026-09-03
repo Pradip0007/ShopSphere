@@ -1,12 +1,16 @@
-import { useQuery } from '@tanstack/react-query';
-import { createFileRoute, Outlet } from '@tanstack/react-router';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
+import { useMemo } from 'react';
 import { z } from 'zod';
-import { productsQueryOptions } from '@/features/products/queries';
+import { ProductGridSkeleton } from '@/features/products/ProductCardSkeleton';
+import { ProductGrid } from '@/features/products/ProductGrid';
+import { productsInfiniteQueryOptions } from '@/features/products/queries';
+import { useIntersect } from '@/shared/lib/use-intersect';
+import { Button } from '@/shared/ui';
 
 const productsSearchSchema = z.object({
   category: z.string().optional(),
   sort: z.enum(['price-asc', 'price-desc']).default('price-asc').catch('price-asc'),
-  page: z.number().int().positive().default(1).catch(1),
 });
 
 export const Route = createFileRoute('/products')({
@@ -15,37 +19,83 @@ export const Route = createFileRoute('/products')({
 });
 
 function ProductsPage(): React.JSX.Element {
-  const { category, sort, page } = Route.useSearch();
+  const { category, sort } = Route.useSearch();
 
-  const { data, isPending, isError, error } = useQuery(
-    productsQueryOptions({
+  const query = useInfiniteQuery(
+    productsInfiniteQueryOptions({
       ...(category !== undefined ? { category } : {}),
       sort,
-      page,
-      pageSize: 20,
+      pageSize: 24,
     }),
   );
 
-  if (isPending) return <p>Loading…</p>;
-  if (isError) return <p role="alert">Failed to load: {error.message}</p>;
+  const items = useMemo(() => query.data?.pages.flatMap((page) => page.items) ?? [], [query.data]);
+
+  const sentinelRef = useIntersect<HTMLDivElement>({
+    onIntersect: () => {
+      if (query.hasNextPage && !query.isFetchingNextPage) {
+        void query.fetchNextPage();
+      }
+    },
+    enabled: query.hasNextPage && !query.isPending,
+  });
+
+  if (query.isPending) {
+    return (
+      <section className="grid gap-6">
+        <h1 className="text-2xl font-semibold">Products</h1>
+
+        <ProductGridSkeleton />
+      </section>
+    );
+  }
+
+  if (query.isError) {
+    return (
+      <section className="grid max-w-md gap-4">
+        <h1 className="text-2xl font-semibold">Products</h1>
+
+        <p role="alert" className="text-[var(--color-danger)]">
+          Could not load products: {query.error.message}
+        </p>
+
+        <Button onClick={() => void query.refetch()}>Try again</Button>
+      </section>
+    );
+  }
+
+  const totalLoaded = items.length;
+  const totalAvailable = query.data.pages[0]?.totalCount ?? totalLoaded;
 
   return (
-    <section>
-      <h1>Products</h1>
-      <p style={{ opacity: 0.6 }}>
-        Page {data.page} of {data.totalPages} · {data.totalCount} total
-      </p>
-      <ul style={{ padding: 0, listStyle: 'none', display: 'grid', gap: '0.75rem' }}>
-        {data.items.map((p) => (
-          <li key={p.id} style={{ border: '1px solid #ddd', borderRadius: 8, padding: '0.75rem' }}>
-            <strong>{p.title}</strong>
-            <div style={{ opacity: 0.7 }}>
-              {p.currency} {p.price.toFixed(2)}
-            </div>
-          </li>
-        ))}
-      </ul>
-      <Outlet />
+    <section className="grid gap-6">
+      <header className="flex items-baseline justify-between">
+        <h1 className="text-2xl font-semibold">Products</h1>
+
+        <p className="text-sm text-[var(--color-text-muted)]">
+          Showing {totalLoaded} of {totalAvailable}
+        </p>
+      </header>
+
+      {items.length === 0 ? (
+        <p className="text-[var(--color-text-muted)]">No products found.</p>
+      ) : (
+        <>
+          <ProductGrid items={items} />
+
+          <div ref={sentinelRef} aria-hidden="true" className="h-1" />
+
+          {query.isFetchingNextPage && (
+            <p className="text-center text-sm text-[var(--color-text-muted)]">Loading more…</p>
+          )}
+
+          {!query.hasNextPage && totalLoaded > 0 && (
+            <p className="text-center text-sm text-[var(--color-text-muted)]">
+              You've reached the end.
+            </p>
+          )}
+        </>
+      )}
     </section>
   );
 }
