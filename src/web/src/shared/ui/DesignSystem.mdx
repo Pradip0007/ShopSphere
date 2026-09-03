@@ -1,0 +1,28 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Design System" />
+
+# ShopSphere Design System
+
+Reusable UI primitives built on Radix + Tailwind v4.
+
+## Principles
+
+- **Accessibility first.** Every interactive component ships with keyboard support and ARIA roles from Radix.
+- **Tokens over hex.** All colors, spacing, and typography reference CSS variables defined in `styles/tokens.css`.
+- **Composition, not configuration.** Small components + `asChild` > monolithic components with 20 props.
+- **Variants as data.** Use `cva` — no ternary spaghetti.
+
+## Components
+
+- **Button** — six variants (primary, secondary, ghost, outline, destructive, link), three sizes.
+- **Dialog** — Radix Dialog, portalled, focus-trapped, backdrop click + Escape close.
+- **DropdownMenu** — Radix DropdownMenu, keyboard-navigable.
+- **FormField** — labelled input with error slot; ARIA-wired.
+
+## Adding a new component
+
+1. Land the component under `src/shared/ui/`.
+2. Export via `src/shared/ui/index.ts`.
+3. Add stories at least: default + interaction test.
+4. Optional: add to this MDX page under **Components**.

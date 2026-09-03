@@ -11,7 +11,9 @@
     "test:unit": "vitest run",
     "lint": "biome check ./src",
     "lint:fix": "biome check --write ./src",
-    "format": "biome format --write ./src"
+    "format": "biome format --write ./src",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
@@ -32,6 +34,12 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.11",
+    "@chromatic-com/storybook": "latest",
+    "@storybook/addon-a11y": "10.5.10",
+    "@storybook/addon-docs": "10.5.10",
+    "@storybook/addon-mcp": "latest",
+    "@storybook/addon-vitest": "10.5.10",
+    "@storybook/tanstack-react": "10.5.10",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/react-query-devtools": "^5.102.8",
     "@tanstack/router-devtools": "^1.167.1",
@@ -40,6 +48,11 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^5.1.4",
+    "@vitest/browser-playwright": "4.1.11",
+    "@vitest/coverage-v8": "4.1.11",
+    "eslint-plugin-storybook": "10.5.10",
+    "playwright": "latest",
+    "storybook": "10.5.10",
     "tailwindcss": "^4.0.0",
     "typescript": "~6.0.2",
     "vite": "^6.4.3",
