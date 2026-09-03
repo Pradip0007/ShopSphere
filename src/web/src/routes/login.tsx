@@ -7,6 +7,7 @@ import { login } from '@/features/auth/api';
 import { applyServerErrors } from '@/features/auth/apply-server-errors';
 import { type LoginFormValues, loginSchema } from '@/features/auth/schemas';
 import { getUserFromAccessToken } from '@/shared/lib/jwt';
+import { Button } from '@/shared/ui/Button';
 import { FormField } from '@/shared/ui/FormField';
 import { setCredentials } from '@/store/auth.slice';
 import { useAppDispatch } from '@/store/hooks';
@@ -97,9 +98,9 @@ function LoginPage(): React.JSX.Element {
           </div>
         )}
 
-        <button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting} block>
           {isSubmitting ? 'Signing in…' : 'Sign in'}
-        </button>
+        </Button>
       </form>
     </section>
   );

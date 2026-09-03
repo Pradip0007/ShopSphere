@@ -1,4 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { Button } from '@/shared/ui/Button';
 import {
   Dialog,
   DialogContent,
@@ -6,13 +7,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/shared/ui/Dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/shared/ui/DropdownMenu';
 
 export const Route = createFileRoute('/dev/kitchen-sink')({
   component: KitchenSink,
@@ -20,68 +14,80 @@ export const Route = createFileRoute('/dev/kitchen-sink')({
 
 function KitchenSink(): React.JSX.Element {
   return (
-    <section className="grid max-w-2xl gap-6">
+    <section className="grid max-w-3xl gap-8">
       <h1 className="text-2xl font-semibold">Kitchen Sink</h1>
 
-      <div className="flex gap-2">
-        <Dialog>
-          <DialogTrigger className="rounded-md bg-brand-500 px-4 py-2 text-white hover:bg-brand-600">
-            Open dialog
-          </DialogTrigger>
+      <div className="grid gap-3">
+        <h2 className="text-lg font-semibold">Button variants</h2>
 
-          <DialogContent>
-            <DialogTitle className="text-lg font-semibold">Confirm action</DialogTitle>
-
-            <DialogDescription className="text-[var(--color-text-muted)]">
-              This is a themed Radix Dialog. Focus is trapped inside; press Escape to close.
-            </DialogDescription>
-          </DialogContent>
-        </Dialog>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger className="rounded-md border border-[var(--color-border)] px-4 py-2">
-            Options ▾
-          </DropdownMenuTrigger>
-
-          <DropdownMenuContent>
-            <DropdownMenuItem>Edit</DropdownMenuItem>
-
-            <DropdownMenuItem>Duplicate</DropdownMenuItem>
-
-            <DropdownMenuSeparator />
-
-            <DropdownMenuItem className="text-[var(--color-danger)]">Delete</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex flex-wrap gap-3">
+          <Button variant="primary">Primary</Button>
+          <Button variant="secondary">Secondary</Button>
+          <Button variant="ghost">Ghost</Button>
+          <Button variant="outline">Outline</Button>
+          <Button variant="destructive">Destructive</Button>
+          <Button variant="link">Link</Button>
+        </div>
       </div>
 
       <div className="grid gap-3">
-        <h2 className="text-xl font-semibold">Token palette</h2>
+        <h2 className="text-lg font-semibold">Button sizes</h2>
 
-        <div className="grid grid-cols-10 gap-1">
-          {[
-            'bg-brand-50',
-            'bg-brand-100',
-            'bg-brand-200',
-            'bg-brand-300',
-            'bg-brand-400',
-            'bg-brand-500',
-            'bg-brand-600',
-            'bg-brand-700',
-            'bg-brand-800',
-            'bg-brand-900',
-          ].map((className, index) => (
-            <div
-              key={className}
-              className={`flex aspect-square items-center justify-center rounded text-xs ${className}`}
-              style={{
-                color: index >= 5 ? 'white' : 'inherit',
-              }}
-            >
-              {(index + 1) * 50}
-            </div>
-          ))}
+        <div className="flex flex-wrap items-center gap-3">
+          <Button size="sm">Small</Button>
+          <Button size="md">Medium</Button>
+          <Button size="lg">Large</Button>
         </div>
+      </div>
+
+      <div className="grid gap-3">
+        <h2 className="text-lg font-semibold">Block button</h2>
+
+        <Button block variant="primary">
+          Full width
+        </Button>
+      </div>
+
+      <div className="grid gap-3">
+        <h2 className="text-lg font-semibold">Disabled</h2>
+
+        <div className="flex gap-3">
+          <Button disabled>Disabled primary</Button>
+          <Button variant="destructive" disabled>
+            Disabled destructive
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid gap-3">
+        <h2 className="text-lg font-semibold">asChild — Button as Link</h2>
+
+        <Button asChild variant="outline">
+          <Link to="/products">Browse products</Link>
+        </Button>
+      </div>
+
+      <div className="grid gap-3">
+        <h2 className="text-lg font-semibold">Dialog with themed buttons</h2>
+
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="primary">Delete account…</Button>
+          </DialogTrigger>
+
+          <DialogContent>
+            <DialogTitle className="text-lg font-semibold">Confirm deletion</DialogTitle>
+
+            <DialogDescription className="mt-2 text-[var(--color-text-muted)]">
+              This action cannot be undone.
+            </DialogDescription>
+
+            <div className="mt-6 flex justify-end gap-2">
+              <Button variant="ghost">Cancel</Button>
+              <Button variant="destructive">Delete</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </section>
   );
