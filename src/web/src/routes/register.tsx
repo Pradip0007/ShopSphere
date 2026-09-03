@@ -6,6 +6,7 @@ import { login, register as registerApi } from '@/features/auth/api';
 import { applyServerErrors } from '@/features/auth/apply-server-errors';
 import { type RegisterFormValues, registerSchema } from '@/features/auth/schemas';
 import { getUserFromAccessToken } from '@/shared/lib/jwt';
+import { Button } from '@/shared/ui/Button';
 import { FormField } from '@/shared/ui/FormField';
 import { setCredentials } from '@/store/auth.slice';
 import { useAppDispatch } from '@/store/hooks';
@@ -119,9 +120,9 @@ function RegisterPage(): React.JSX.Element {
           </div>
         )}
 
-        <button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting} block>
           {isSubmitting ? 'Creating…' : 'Create account'}
-        </button>
+        </Button>
       </form>
     </section>
   );

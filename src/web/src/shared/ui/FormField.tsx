@@ -1,4 +1,5 @@
 import { forwardRef, type InputHTMLAttributes } from 'react';
+import { cn } from '@/shared/lib/cn';
 
 interface FormFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -6,7 +7,7 @@ interface FormFieldProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(function FormField(
-  { label, error, id, ...inputProps },
+  { label, error, id, className, ...inputProps },
   ref,
 ) {
   const inputId = id ?? `field-${label.toLowerCase().replace(/\s+/g, '-')}`;
@@ -14,18 +15,8 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(function F
   const errorId = `${inputId}-error`;
 
   return (
-    <div
-      style={{
-        display: 'grid',
-        gap: 4,
-      }}
-    >
-      <label
-        htmlFor={inputId}
-        style={{
-          fontWeight: 500,
-        }}
-      >
+    <div className="grid gap-1">
+      <label htmlFor={inputId} className="text-sm font-medium">
         {label}
       </label>
 
@@ -35,23 +26,17 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(function F
         ref={ref}
         aria-invalid={error ? 'true' : 'false'}
         aria-describedby={error ? errorId : undefined}
-        style={{
-          padding: '0.5rem 0.75rem',
-          border: `1px solid ${error ? '#c00' : '#ccc'}`,
-          borderRadius: 6,
-          font: 'inherit',
-        }}
+        className={cn(
+          'h-10 rounded-md border px-3 outline-none',
+          'bg-[var(--color-surface)] text-[var(--color-text)]',
+          'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500',
+          error ? 'border-[var(--color-danger)]' : 'border-[var(--color-border)]',
+          className,
+        )}
       />
 
       {error && (
-        <span
-          id={errorId}
-          role="alert"
-          style={{
-            color: '#c00',
-            fontSize: '0.85rem',
-          }}
-        >
+        <span id={errorId} role="alert" className="text-sm text-[var(--color-danger)]">
           {error}
         </span>
       )}
