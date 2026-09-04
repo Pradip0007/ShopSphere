@@ -42,7 +42,7 @@
 }
 
 /* Dark mode overrides */
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   @theme {
     --color-surface: oklch(0.16 0 0);
     --color-surface-muted: oklch(0.2 0 0);
@@ -51,4 +51,4 @@
     --color-text: oklch(0.96 0 0);
     --color-text-muted: oklch(0.68 0 0);
   }
-}
+} */

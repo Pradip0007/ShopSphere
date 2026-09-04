@@ -20,6 +20,7 @@ export {
   DropdownMenuTrigger,
 } from './DropdownMenu';
 export { FormField } from './FormField';
+export { Tabs, TabsContent, TabsList, TabsTrigger } from './Tabs';
 
 export type {
   ButtonSize,

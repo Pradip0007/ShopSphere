@@ -3,15 +3,21 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useMemo } from 'react';
 import { z } from 'zod';
 import { ProductGridSkeleton } from '@/features/products/ProductCardSkeleton';
+import { ProductFilters } from '@/features/products/ProductFilters';
 import { ProductGrid } from '@/features/products/ProductGrid';
 import { productsInfiniteQueryOptions } from '@/features/products/queries';
 import { useIntersect } from '@/shared/lib/use-intersect';
 import { Button } from '@/shared/ui';
 
 const productsSearchSchema = z.object({
-  category: z.string().optional(),
+  categoryId: z.string().uuid().optional(),
   sort: z.enum(['price-asc', 'price-desc']).default('price-asc').catch('price-asc'),
+  minPrice: z.number().nonnegative().optional(),
+  maxPrice: z.number().nonnegative().optional(),
+  q: z.string().trim().optional(),
 });
+
+export type ProductsSearch = z.infer<typeof productsSearchSchema>;
 
 export const Route = createFileRoute('/products')({
   validateSearch: productsSearchSchema,
@@ -19,12 +25,15 @@ export const Route = createFileRoute('/products')({
 });
 
 function ProductsPage(): React.JSX.Element {
-  const { category, sort } = Route.useSearch();
+  const search = Route.useSearch();
 
   const query = useInfiniteQuery(
     productsInfiniteQueryOptions({
-      ...(category !== undefined ? { category } : {}),
-      sort,
+      ...(search.categoryId !== undefined ? { categoryId: search.categoryId } : {}),
+      sort: search.sort,
+      ...(search.minPrice !== undefined ? { minPrice: search.minPrice } : {}),
+      ...(search.maxPrice !== undefined ? { maxPrice: search.maxPrice } : {}),
+      ...(search.q !== undefined ? { q: search.q } : {}),
       pageSize: 24,
     }),
   );
@@ -44,7 +53,6 @@ function ProductsPage(): React.JSX.Element {
     return (
       <section className="grid gap-6">
         <h1 className="text-2xl font-semibold">Products</h1>
-
         <ProductGridSkeleton />
       </section>
     );
@@ -68,34 +76,43 @@ function ProductsPage(): React.JSX.Element {
   const totalAvailable = query.data.pages[0]?.totalCount ?? totalLoaded;
 
   return (
-    <section className="grid gap-6">
-      <header className="flex items-baseline justify-between">
-        <h1 className="text-2xl font-semibold">Products</h1>
+    <section
+      className="grid gap-6"
+      style={{
+        gridTemplateColumns: '240px 1fr',
+      }}
+    >
+      <ProductFilters />
 
-        <p className="text-sm text-[var(--color-text-muted)]">
-          Showing {totalLoaded} of {totalAvailable}
-        </p>
-      </header>
+      <div className="grid gap-4">
+        <header className="flex items-baseline justify-between">
+          <h1 className="text-2xl font-semibold">Products</h1>
 
-      {items.length === 0 ? (
-        <p className="text-[var(--color-text-muted)]">No products found.</p>
-      ) : (
-        <>
-          <ProductGrid items={items} />
+          <p className="text-sm text-[var(--color-text-muted)]">
+            Showing {totalLoaded} of {totalAvailable}
+          </p>
+        </header>
 
-          <div ref={sentinelRef} aria-hidden="true" className="h-1" />
+        {items.length === 0 ? (
+          <p className="text-[var(--color-text-muted)]">No products match your filters.</p>
+        ) : (
+          <>
+            <ProductGrid items={items} />
 
-          {query.isFetchingNextPage && (
-            <p className="text-center text-sm text-[var(--color-text-muted)]">Loading more…</p>
-          )}
+            <div ref={sentinelRef} aria-hidden="true" className="h-1" />
 
-          {!query.hasNextPage && totalLoaded > 0 && (
-            <p className="text-center text-sm text-[var(--color-text-muted)]">
-              You've reached the end.
-            </p>
-          )}
-        </>
-      )}
+            {query.isFetchingNextPage && (
+              <p className="text-center text-sm text-[var(--color-text-muted)]">Loading more…</p>
+            )}
+
+            {!query.hasNextPage && (
+              <p className="text-center text-sm text-[var(--color-text-muted)]">
+                You've reached the end.
+              </p>
+            )}
+          </>
+        )}
+      </div>
     </section>
   );
 }
