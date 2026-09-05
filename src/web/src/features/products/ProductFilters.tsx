@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import { Route as ProductsRoute } from '@/routes/products';
+import { Route as ProductsIndexRoute } from '@/routes/products.index';
 import { useDebouncedValue } from '@/shared/lib/use-debounced-value';
 import { Button } from '@/shared/ui';
 import { categoriesQueryOptions } from './queries';
@@ -12,7 +12,7 @@ const SORT_OPTIONS = [
 ] as const;
 
 export function ProductFilters(): React.JSX.Element {
-  const search = ProductsRoute.useSearch();
+  const search = ProductsIndexRoute.useSearch();
   const navigate = useNavigate();
 
   const categoriesQuery = useQuery(categoriesQueryOptions());
@@ -31,7 +31,7 @@ export function ProductFilters(): React.JSX.Element {
 
   useEffect(() => {
     void navigate({
-      to: '/products',
+      to: '.',
       search: (prev) => ({
         ...prev,
         q: debouncedQ.length > 0 ? debouncedQ : undefined,
@@ -70,7 +70,7 @@ export function ProductFilters(): React.JSX.Element {
             const next = event.target.value === '' ? undefined : event.target.value;
 
             void navigate({
-              to: '/products',
+              to: '.',
               search: (prev) => ({
                 ...prev,
                 categoryId: next,
@@ -101,7 +101,7 @@ export function ProductFilters(): React.JSX.Element {
             const sort = event.target.value as (typeof SORT_OPTIONS)[number]['value'];
 
             void navigate({
-              to: '/products',
+              to: '.',
               search: (prev) => ({
                 ...prev,
                 sort,
@@ -155,7 +155,7 @@ export function ProductFilters(): React.JSX.Element {
           setMaxPrice('');
 
           void navigate({
-            to: '/products',
+            to: '.',
             search: () => ({
               sort: 'price-asc' as const,
             }),

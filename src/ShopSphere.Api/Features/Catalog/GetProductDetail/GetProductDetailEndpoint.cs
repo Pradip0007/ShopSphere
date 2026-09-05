@@ -25,7 +25,7 @@ public sealed class GetProductDetailEndpoint : IEndpoint
                     join category in db.Categories.AsNoTracking() on p.CategoryId equals category.Id
                     join stock in db.StockLevels.AsNoTracking() on p.Id equals stock.ProductId into stocks
                     from stock in stocks.DefaultIfEmpty()
-                    where p.Status == ProductStatus.Published && p.Slug.Value == slug
+                    where p.Status == ProductStatus.Published && p.Slug == Slug.From(slug)
                     select new ProductDetailProjection(
                         p.Id.Value,
                         p.Title,
@@ -46,9 +46,11 @@ public sealed class GetProductDetailEndpoint : IEndpoint
 
                 ReviewSummary ratings = await db.Reviews
                     .AsNoTracking()
-                    .Where(review => review.ProductId.Value == product.Id && review.Status == ReviewStatus.Approved)
-                    .GroupBy(_ => 1)
-                    .Select(group => new ReviewSummary(
+                    .Where(
+                        review =>
+                            review.ProductId == new ProductId(product.Id)
+                            && review.Status == ReviewStatus.Approved).GroupBy(_ => 1)
+                                        .Select(group => new ReviewSummary(
                         group.Average(review => (double)review.Rating),
                         group.Count()))
                     .SingleOrDefaultAsync(ct)
