@@ -2,6 +2,8 @@ import { type QueryClient, useQueryClient } from '@tanstack/react-query';
 import { createRootRouteWithContext, Link, Outlet } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 import { logoutApi } from '@/features/auth/api';
+import { CartBadge } from '@/features/cart/CartBadge';
+import { CartDrawer } from '@/features/cart/CartDrawer';
 import { router } from '@/router';
 import { logout, selectAuth, selectHasRole } from '@/store/auth.slice';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -46,9 +48,16 @@ function RootLayout(): React.JSX.Element {
         </Link>
 
         {user && (
-          <Link to="/cart" className="hover:text-brand-600">
-            Cart
-          </Link>
+          <CartDrawer
+            trigger={
+              <button
+                type="button"
+                className="rounded px-2 py-1 hover:text-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+              >
+                <CartBadge />
+              </button>
+            }
+          />
         )}
 
         {user && (

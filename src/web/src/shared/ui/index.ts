@@ -12,6 +12,14 @@ export {
   DialogTrigger,
 } from './Dialog';
 export {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerTitle,
+  DrawerTrigger,
+} from './Drawer';
+export {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
