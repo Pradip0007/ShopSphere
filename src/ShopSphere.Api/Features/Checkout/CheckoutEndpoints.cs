@@ -1,3 +1,5 @@
+using ShopSphere.Api.Features.Checkout;
+
 namespace ShopSphere.Api.Features.Checkout;
 
 public static class CheckoutEndpoints
@@ -9,6 +11,7 @@ public static class CheckoutEndpoints
             .WithOpenApi()
             .RequireAuthorization();
 
+        group.MapGet("/review", CheckoutReview.HandleAsync);
         group.MapPost("/", CheckoutFeature.HandleAsync);
 
         return routes;
