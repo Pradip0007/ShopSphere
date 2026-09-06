@@ -1,14 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Outlet } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/_authed/orders')({
-  component: OrdersPage,
+  component: OrdersLayout,
 });
 
-function OrdersPage(): React.JSX.Element {
-  return (
-    <section>
-      <h1>My Orders</h1>
-      <p style={{ opacity: 0.6 }}>List lands Day 66.</p>
-    </section>
-  );
+function OrdersLayout(): React.JSX.Element {
+  return <Outlet />;
 }
