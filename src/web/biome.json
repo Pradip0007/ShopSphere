@@ -38,5 +38,14 @@
         "organizeImports": "on"
       }
     }
-  }
+  },
+  "ignore": [
+    "dist",
+    "node_modules",
+    "coverage",
+    ".vite",
+    "storybook-static",
+    "src/routeTree.gen.ts",
+    "../rsc-playground"
+  ]
 }

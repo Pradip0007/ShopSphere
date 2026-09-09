@@ -62,3 +62,8 @@ src/web/src/routeTree.gen.ts
 
 *storybook.log
 storybook-static
+
+# RSC playground — isolated experiment
+src/rsc-playground/node_modules/
+src/rsc-playground/dist/
+src/rsc-playground/.waku/
