@@ -1,11 +1,15 @@
-import { type QueryClient, useQueryClient } from '@tanstack/react-query';
+import { type QueryClient, QueryErrorResetBoundary, useQueryClient } from '@tanstack/react-query';
 import { createRootRouteWithContext, Link, Outlet } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
+import { ErrorBoundary } from 'react-error-boundary';
+import { AppError } from '@/app/AppError';
 import { logoutApi } from '@/features/auth/api';
+import { LogoutButton } from '@/features/auth/LogoutButton';
 import { CartBadge } from '@/features/cart/CartBadge';
 import { CartDrawer } from '@/features/cart/CartDrawer';
 import { NewsletterForm } from '@/features/newsletter/NewsletterForm';
 import { router } from '@/router';
+import { logToTelemetry } from '@/shared/lib/telemetry';
 import { logout, selectAuth, selectHasRole } from '@/store/auth.slice';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
@@ -15,6 +19,15 @@ export interface RouterContext {
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootLayout,
+  notFoundComponent: () => (
+    <section className="grid max-w-md mx-auto gap-3 py-12 text-center">
+      <h1 className="text-2xl font-semibold">404 — Page not found</h1>
+      <p className="text-[var(--color-text-muted)]">The page you're looking for isn't here.</p>
+      <a href="/" className="text-brand-600 underline">
+        Return home
+      </a>
+    </section>
+  ),
 });
 
 function RootLayout(): React.JSX.Element {
@@ -78,13 +91,9 @@ function RootLayout(): React.JSX.Element {
             <>
               <span>Hi, {user.email}</span>
 
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="rounded-md border border-[var(--color-border)] px-3 py-1.5 text-sm hover:bg-[var(--color-surface-muted)]"
-              >
-                Sign out
-              </button>
+              <form action={handleLogout}>
+                <LogoutButton />
+              </form>
             </>
           ) : (
             <>
@@ -101,7 +110,22 @@ function RootLayout(): React.JSX.Element {
       </header>
 
       <main className="flex-1 p-8">
-        <Outlet />
+        <QueryErrorResetBoundary>
+          {({ reset }) => (
+            <ErrorBoundary
+              FallbackComponent={AppError}
+              onError={(error, info) =>
+                logToTelemetry(error, {
+                  route: window.location.pathname,
+                  extra: { componentStack: info.componentStack },
+                })
+              }
+              onReset={reset}
+            >
+              <Outlet />
+            </ErrorBoundary>
+          )}
+        </QueryErrorResetBoundary>
       </main>
 
       <footer className="mt-auto border-t border-[var(--color-border)] px-8 py-8">
