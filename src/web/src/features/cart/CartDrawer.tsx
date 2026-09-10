@@ -22,7 +22,7 @@ export function CartDrawer({ trigger }: CartDrawerProps): React.JSX.Element {
     <Drawer>
       <DrawerTrigger asChild>{trigger}</DrawerTrigger>
 
-      <DrawerContent side="right">
+      <DrawerContent side="right" data-testid="cart-drawer">
         <header className="flex items-center justify-between border-b border-[var(--color-border)] p-4">
           <DrawerTitle className="text-lg font-semibold">Your cart</DrawerTitle>
 

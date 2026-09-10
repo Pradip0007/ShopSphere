@@ -37,6 +37,7 @@ export function ProductDetail({ slug }: ProductDetailProps): React.JSX.Element {
           <div className="flex items-center gap-3">
             <Button
               size="lg"
+              className="text-black"
               disabled={product.stock <= 0}
               onClick={() => console.info('Add to cart', product.id)}
             >

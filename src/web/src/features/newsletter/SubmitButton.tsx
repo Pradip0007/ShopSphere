@@ -5,7 +5,7 @@ export function SubmitButton(): React.JSX.Element {
   const { pending } = useFormStatus();
 
   return (
-    <Button type="submit" disabled={pending}>
+    <Button type="submit" disabled={pending} className="text-white">
       {pending ? 'Subscribing…' : 'Subscribe'}
     </Button>
   );

@@ -26,6 +26,7 @@ export function ProductCard({ product, className }: ProductCardProps): React.JSX
       <Link
         to="/products/$slug"
         params={{ slug: product.slug }}
+        data-testid="product-card"
         onMouseEnter={() => {
           void queryClient.prefetchQuery(productDetailQueryOptions(product.slug));
         }}
@@ -39,7 +40,9 @@ export function ProductCard({ product, className }: ProductCardProps): React.JSX
         </div>
 
         <div className="grid gap-1">
-          <h3 className="line-clamp-2 text-sm font-medium">{product.title}</h3>
+          <h2 data-testid="product-title" className="line-clamp-2 text-sm font-medium">
+            {product.title}
+          </h2>
 
           <p className="text-base font-semibold">{formatPrice(product.price, product.currency)}</p>
         </div>
@@ -48,6 +51,8 @@ export function ProductCard({ product, className }: ProductCardProps): React.JSX
       <Button
         variant="primary"
         size="sm"
+        className="text-black"
+        data-testid="product-add-to-cart"
         disabled={addToCart.isPending}
         onClick={() => {
           addToCart.mutate({
