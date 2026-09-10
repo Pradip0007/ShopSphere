@@ -15,4 +15,5 @@ export const orderDetailQueryOptions = (id: string) =>
     queryKey: ['orders', 'detail', id] as const,
     queryFn: () => fetchOrder(id),
     staleTime: 15_000,
+    throwOnError: true,
   });

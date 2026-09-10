@@ -71,6 +71,7 @@ export const productDetailQueryOptions = (slug: string) =>
     queryKey: ['products', 'detail', slug] as const,
     queryFn: () => fetchProductDetail(slug),
     staleTime: 60_000,
+    throwOnError: true,
   });
 
 export const productReviewsQueryOptions = (slug: string) =>

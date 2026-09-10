@@ -21,6 +21,8 @@ export type ProductsSearch = z.infer<typeof productsSearchSchema>;
 
 export const Route = createFileRoute('/products/')({
   validateSearch: productsSearchSchema,
+  pendingComponent: ProductGridSkeleton,
+  pendingMs: 200,
   component: ProductsIndexPage,
 });
 
