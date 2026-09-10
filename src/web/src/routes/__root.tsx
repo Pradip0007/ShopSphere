@@ -4,6 +4,7 @@ import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 import { logoutApi } from '@/features/auth/api';
 import { CartBadge } from '@/features/cart/CartBadge';
 import { CartDrawer } from '@/features/cart/CartDrawer';
+import { NewsletterForm } from '@/features/newsletter/NewsletterForm';
 import { router } from '@/router';
 import { logout, selectAuth, selectHasRole } from '@/store/auth.slice';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -37,7 +38,7 @@ function RootLayout(): React.JSX.Element {
   }
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <header className="flex items-center gap-4 border-b border-[var(--color-border)] px-8 py-4">
         <Link to="/" className="hover:text-brand-600">
           Home
@@ -99,11 +100,15 @@ function RootLayout(): React.JSX.Element {
         </div>
       </header>
 
-      <main className="p-8">
+      <main className="flex-1 p-8">
         <Outlet />
       </main>
 
+      <footer className="mt-auto border-t border-[var(--color-border)] px-8 py-8">
+        <NewsletterForm />
+      </footer>
+
       {import.meta.env.DEV && <TanStackRouterDevtools position="bottom-right" />}
-    </>
+    </div>
   );
 }
