@@ -52,44 +52,54 @@ function RootLayout(): React.JSX.Element {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-black"
+      >
+        Skip to main content
+      </a>
       <header className="flex items-center gap-4 border-b border-[var(--color-border)] px-8 py-4">
-        <Link to="/" className="hover:text-brand-600">
-          Home
-        </Link>
-
-        <Link to="/products" className="hover:text-brand-600">
-          Products
-        </Link>
-
-        {user && (
-          <CartDrawer
-            trigger={
-              <button
-                type="button"
-                className="rounded px-2 py-1 hover:text-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
-              >
-                <CartBadge />
-              </button>
-            }
-          />
-        )}
-
-        {user && (
-          <Link to="/orders" className="hover:text-brand-600">
-            Orders
+        <nav aria-label="Primary" data-testid="primary-nav" className="flex items-center gap-4">
+          <Link to="/" data-testid="nav-home" className="hover:text-brand-600">
+            Home
           </Link>
-        )}
 
-        {isAdmin && (
-          <Link to="/admin" className="hover:text-brand-600">
-            Admin
+          <Link to="/products" data-testid="nav-products" className="hover:text-brand-600">
+            Products
           </Link>
-        )}
+
+          {user && (
+            <CartDrawer
+              trigger={
+                <button
+                  type="button"
+                  data-testid="cart-drawer-trigger"
+                  aria-label="Open shopping cart"
+                  className="rounded px-2 py-1 hover:text-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+                >
+                  <CartBadge />
+                </button>
+              }
+            />
+          )}
+
+          {user && (
+            <Link to="/orders" data-testid="nav-orders" className="hover:text-brand-600">
+              Orders
+            </Link>
+          )}
+
+          {isAdmin && (
+            <Link to="/admin" data-testid="nav-admin" className="hover:text-brand-600">
+              Admin
+            </Link>
+          )}
+        </nav>
 
         <div className="ml-auto flex items-center gap-3">
           {user ? (
             <>
-              <span>Hi, {user.email}</span>
+              <span data-testid="user-greeting">Hi, {user.email}</span>
 
               <form action={handleLogout}>
                 <LogoutButton />
@@ -97,19 +107,23 @@ function RootLayout(): React.JSX.Element {
             </>
           ) : (
             <>
-              <Link to="/login" search={{}} className="hover:text-brand-600">
+              <Link
+                to="/login"
+                data-testid="nav-login"
+                search={{}}
+                className="hover:text-brand-600"
+              >
                 Login
               </Link>
 
-              <Link to="/register" className="hover:text-brand-600">
+              <Link to="/register" data-testid="nav-register" className="hover:text-brand-600">
                 Register
               </Link>
             </>
           )}
         </div>
       </header>
-
-      <main className="flex-1 p-8">
+      <main id="main-content" data-testid="main-content" className="flex-1 p-8">
         <QueryErrorResetBoundary>
           {({ reset }) => (
             <ErrorBoundary
@@ -127,12 +141,15 @@ function RootLayout(): React.JSX.Element {
           )}
         </QueryErrorResetBoundary>
       </main>
-
-      <footer className="mt-auto border-t border-[var(--color-border)] px-8 py-8">
+      <footer
+        role="contentinfo"
+        className="mt-auto border-t border-[var(--color-border)] px-8 py-8"
+      >
         <NewsletterForm />
       </footer>
-
-      {import.meta.env.DEV && <TanStackRouterDevtools position="bottom-right" />}
+      {import.meta.env.DEV && (
+        <TanStackRouterDevtools position="bottom-right" containerElement="div" />
+      )}
     </div>
   );
 }

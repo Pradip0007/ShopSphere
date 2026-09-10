@@ -62,9 +62,11 @@ function CartPage(): React.JSX.Element {
       </ul>
 
       <footer className="flex items-center justify-between border-t border-[var(--color-border)] pt-4">
-        <p className="text-lg font-semibold">Total items: {cart.totalUnits}</p>
-
-        <Button asChild size="lg">
+        <p data-testid="cart-subtotal" className="text-lg font-semibold">
+          Total items: {cart.totalUnits}
+        </p>
+        <Button asChild size="lg" data-testid="cart-checkout-button">
+          {' '}
           <Link to="/checkout">Proceed to checkout</Link>
         </Button>
       </footer>

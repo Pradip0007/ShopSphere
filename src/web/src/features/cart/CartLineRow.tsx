@@ -14,13 +14,13 @@ export function CartLineRow({ line }: CartLineRowProps): React.JSX.Element {
   const isRemoving = remove.isPending;
 
   return (
-    <li className="grid gap-3 border-b border-[var(--color-border)] py-4">
+    <li data-testid="cart-line" className="grid gap-3 border-b border-[var(--color-border)] py-4">
+      {' '}
       <div>
         <p className="text-sm font-medium">Product</p>
 
         <p className="break-all text-xs text-[var(--color-text-muted)]">{line.productId}</p>
       </div>
-
       <div className="flex items-center gap-2">
         <Button
           variant="outline"
@@ -68,13 +68,11 @@ export function CartLineRow({ line }: CartLineRowProps): React.JSX.Element {
           Remove
         </Button>
       </div>
-
       {update.isError && (
         <p role="alert" className="text-sm text-[var(--color-danger)]">
           Could not update this item.
         </p>
       )}
-
       {remove.isError && (
         <p role="alert" className="text-sm text-[var(--color-danger)]">
           Could not remove this item.
