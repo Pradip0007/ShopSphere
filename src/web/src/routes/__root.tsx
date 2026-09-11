@@ -9,6 +9,7 @@ import { CartBadge } from '@/features/cart/CartBadge';
 import { CartDrawer } from '@/features/cart/CartDrawer';
 import { NewsletterForm } from '@/features/newsletter/NewsletterForm';
 import { router } from '@/router';
+import { HubStatusPill } from '@/shared/lib/signalr/HubStatusPill';
 import { logToTelemetry } from '@/shared/lib/telemetry';
 import { logout, selectAuth, selectHasRole } from '@/store/auth.slice';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -99,6 +100,7 @@ function RootLayout(): React.JSX.Element {
         <div className="ml-auto flex items-center gap-3">
           {user ? (
             <>
+              <HubStatusPill />
               <span data-testid="user-greeting">Hi, {user.email}</span>
 
               <form action={handleLogout}>

@@ -8,6 +8,7 @@ import { Provider as ReduxProvider } from 'react-redux';
 import { bootstrapAuth } from '@/app/boot';
 import { router } from '@/router';
 import { queryClient } from '@/shared/lib/query-client';
+import { NotificationsHubProvider } from '@/shared/lib/signalr/NotificationsHub';
 import { store } from '@/store';
 import '@/index.css';
 
@@ -37,11 +38,13 @@ await bootstrapAuth();
 createRoot(rootEl).render(
   <StrictMode>
     <ReduxProvider store={store}>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
+      <NotificationsHubProvider>
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
 
-        {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
-      </QueryClientProvider>
+          {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+        </QueryClientProvider>
+      </NotificationsHubProvider>
     </ReduxProvider>
   </StrictMode>,
 );
