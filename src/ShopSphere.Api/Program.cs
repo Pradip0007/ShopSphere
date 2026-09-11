@@ -47,6 +47,7 @@ using ShopSphere.Infrastructure.Reviews;
 using ShopSphere.Api.Features.Reviews;
 using ShopSphere.Infrastructure.Audit;
 using ShopSphere.Api.Features.Admin;
+using ShopSphere.Api.SignalR;
 using IDatabase = StackExchange.Redis.IDatabase;
 
 
@@ -162,6 +163,23 @@ builder.Services
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.FromSeconds(30)
             };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = ctx =>
+            {
+                var accessToken = ctx.Request.Query["access_token"];
+                var path = ctx.HttpContext.Request.Path;
+
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    path.StartsWithSegments("/hubs"))
+                {
+                    ctx.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            }
+        };
     });
 
 builder.Services.AddAuthorization();
@@ -259,6 +277,14 @@ builder.Services.AddSingleton<
     IIntegrationEventMapperResolver,
     IntegrationEventMapperResolver>();
 
+builder.Services.AddSignalR(o =>
+{
+    o.EnableDetailedErrors = builder.Environment.IsDevelopment();
+    o.MaximumReceiveMessageSize = 32 * 1024;
+    o.KeepAliveInterval = TimeSpan.FromSeconds(15);
+    o.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+});
+
 var app = builder.Build();
 
 app.UseExceptionHandler();
@@ -325,6 +351,9 @@ app.MapReviewEndpoints();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.MapHub<NotificationsHub>("/hubs/notifications")
+    .RequireAuthorization();
 
 app.MapCartEndpoints();
 
