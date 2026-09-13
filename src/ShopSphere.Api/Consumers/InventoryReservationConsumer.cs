@@ -7,6 +7,7 @@ using ShopSphere.Domain.Ordering;
 using ShopSphere.Infrastructure.Persistence;
 using Microsoft.AspNetCore.SignalR;
 using ShopSphere.Api.SignalR;
+using ShopSphere.Api.Features.Orders.OrderBrodcast;
 
 namespace ShopSphere.Api.Consumers;
 
@@ -15,6 +16,7 @@ public sealed class InventoryReservationConsumer(
     IOrderRepository orders,
     IProcessedMessageStore processed,
     IHubContext<NotificationsHub, INotificationsClient> hub,
+    IOrderStatusBroadcaster broadcaster,
     ILogger<InventoryReservationConsumer> logger)
     : IConsumer<OrderPlaced>
 {
@@ -87,6 +89,11 @@ public sealed class InventoryReservationConsumer(
         order.MarkInventoryReserved();
 
         await db.SaveChangesAsync(context.CancellationToken);
+
+        await broadcaster.BroadcastAsync(
+    order.Id.Value,
+    OrderStatus.InventoryReserved,
+    context.CancellationToken);
 
         // Broadcast the new availability after the database save succeeds.
         foreach (var (stock, _) in reservedSoFar)

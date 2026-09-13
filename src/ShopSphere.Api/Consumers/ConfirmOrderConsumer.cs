@@ -5,6 +5,7 @@ using ShopSphere.Api.Infrastructure.Messaging;
 using ShopSphere.Domain.Ordering;
 using ShopSphere.Domain.Users;
 using ShopSphere.Infrastructure.Persistence;
+using ShopSphere.Api.Features.Orders.OrderBrodcast;
 
 namespace ShopSphere.Api.Consumers;
 
@@ -15,17 +16,20 @@ public sealed class ConfirmOrderConsumer : IConsumer<PaymentAuthorized>
     private readonly IOrderRepository _orders;
     private readonly ShopSphereDbContext _db;
     private readonly IProcessedMessageStore _processed;
+    private readonly IOrderStatusBroadcaster _broadcaster;
     private readonly ILogger<ConfirmOrderConsumer> _logger;
 
     public ConfirmOrderConsumer(
         IOrderRepository orders,
         ShopSphereDbContext db,
         IProcessedMessageStore processed,
+        IOrderStatusBroadcaster broadcaster,
         ILogger<ConfirmOrderConsumer> logger)
     {
         _orders = orders;
         _db = db;
         _processed = processed;
+        _broadcaster = broadcaster;
         _logger = logger;
     }
 
@@ -70,6 +74,16 @@ public sealed class ConfirmOrderConsumer : IConsumer<PaymentAuthorized>
         order.MarkConfirmed();
 
         await _orders.SaveChangesAsync(context.CancellationToken);
+
+        await _broadcaster.BroadcastAsync(
+            order.Id.Value,
+            OrderStatus.PaymentAuthorized,
+            context.CancellationToken);
+
+        await _broadcaster.BroadcastAsync(
+            order.Id.Value,
+            OrderStatus.Confirmed,
+            context.CancellationToken);
 
         // 3. Find the customer directly from EF.
         //

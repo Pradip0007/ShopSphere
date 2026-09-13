@@ -1,5 +1,8 @@
 export type OrderStatus =
   | 'Pending'
+  | 'Placed'
+  | 'InventoryReserved'
+  | 'PaymentAuthorized'
   | 'Confirmed'
   | 'Paid'
   | 'Shipped'
