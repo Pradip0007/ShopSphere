@@ -1,8 +1,10 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
+import { useAddToCart } from '@/features/cart/queries';
 import { Button, Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui';
 import { ProductGallery } from './ProductGallery';
 import { ProductReviews } from './ProductReviews';
 import { productDetailQueryOptions } from './queries';
+import { useStockLevel } from './useStockLevel';
 
 interface ProductDetailProps {
   slug: string;
@@ -10,6 +12,9 @@ interface ProductDetailProps {
 
 export function ProductDetail({ slug }: ProductDetailProps): React.JSX.Element {
   const { data: product } = useSuspenseQuery(productDetailQueryOptions(slug));
+  const stock = useStockLevel(product.sku, product.stock);
+  const addToCart = useAddToCart();
+
   const price = new Intl.NumberFormat(undefined, {
     style: 'currency',
     currency: product.currency,
@@ -38,13 +43,18 @@ export function ProductDetail({ slug }: ProductDetailProps): React.JSX.Element {
             <Button
               size="lg"
               className="text-black"
-              disabled={product.stock <= 0}
-              onClick={() => console.info('Add to cart', product.id)}
+              disabled={stock <= 0 || addToCart.isPending}
+              onClick={() => {
+                addToCart.mutate({
+                  productId: product.id,
+                  quantity: 1,
+                });
+              }}
             >
-              {product.stock > 0 ? 'Add to cart' : 'Out of stock'}
+              {stock <= 0 ? 'Out of stock' : addToCart.isPending ? 'Adding…' : 'Add to cart'}
             </Button>
-            {product.stock > 0 && product.stock < 5 && (
-              <span className="text-sm text-[var(--color-warning)]">Only {product.stock} left</span>
+            {stock > 0 && stock < 5 && (
+              <span className="text-sm text-[var(--color-warning)]">Only {stock} left</span>
             )}
           </div>
 

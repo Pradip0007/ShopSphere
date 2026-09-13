@@ -5,6 +5,8 @@ using ShopSphere.Api.Infrastructure.Messaging;
 using ShopSphere.Domain.Catalog;
 using ShopSphere.Domain.Ordering;
 using ShopSphere.Infrastructure.Persistence;
+using Microsoft.AspNetCore.SignalR;
+using ShopSphere.Api.SignalR;
 
 namespace ShopSphere.Api.Consumers;
 
@@ -12,6 +14,7 @@ public sealed class InventoryReservationConsumer(
     ShopSphereDbContext db,
     IOrderRepository orders,
     IProcessedMessageStore processed,
+    IHubContext<NotificationsHub, INotificationsClient> hub,
     ILogger<InventoryReservationConsumer> logger)
     : IConsumer<OrderPlaced>
 {
@@ -84,6 +87,20 @@ public sealed class InventoryReservationConsumer(
         order.MarkInventoryReserved();
 
         await db.SaveChangesAsync(context.CancellationToken);
+
+        // Broadcast the new availability after the database save succeeds.
+        foreach (var (stock, _) in reservedSoFar)
+        {
+            var evt = new StockChangedEvent(
+                stock.Sku.Value,
+                stock.Available,
+                DateTimeOffset.UtcNow);
+
+            await hub
+                .Clients
+                .Group(GroupName.Stock(stock.Sku.Value))
+                .StockChanged(evt);
+        }
 
         logger.LogInformation(
             "Inventory reserved for orderId={OrderId} lineCount={LineCount}",

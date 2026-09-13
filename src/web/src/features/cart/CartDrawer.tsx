@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
 import {
   Button,
   Drawer,
@@ -16,6 +17,7 @@ interface CartDrawerProps {
 
 export function CartDrawer({ trigger }: CartDrawerProps): React.JSX.Element {
   const query = useQuery(cartQueryOptions());
+  const navigate = useNavigate();
   const cart = query.data;
 
   return (
@@ -63,8 +65,14 @@ export function CartDrawer({ trigger }: CartDrawerProps): React.JSX.Element {
             </div>
 
             <DrawerClose asChild>
-              <Button variant="primary" block>
-                Continue shopping
+              <Button
+                variant="primary"
+                block
+                onClick={() => {
+                  void navigate({ to: '/checkout' });
+                }}
+              >
+                Go to checkout
               </Button>
             </DrawerClose>
           </footer>
