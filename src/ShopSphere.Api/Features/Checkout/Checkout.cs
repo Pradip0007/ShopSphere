@@ -3,6 +3,7 @@ using ShopSphere.Api.Features.Cart;
 using ShopSphere.Domain.Cart;
 using ShopSphere.Domain.Catalog;
 using ShopSphere.Domain.Ordering;
+using ShopSphere.Api.Features.Orders.OrderBrodcast;
 
 namespace ShopSphere.Api.Features.Checkout;
 
@@ -20,6 +21,7 @@ public static class CheckoutFeature
         ICartRepository carts,
         IProductRepository products,
         IOrderRepository orders,
+        IOrderStatusBroadcaster broadcaster,
         CancellationToken ct)
     {
         var userIdClaim = http.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
@@ -64,6 +66,10 @@ public static class CheckoutFeature
 
         await orders.AddAsync(order, ct);
         await orders.SaveChangesAsync(ct);
+        await broadcaster.BroadcastAsync(
+    order.Id.Value,
+    "Placed",
+    ct);
         await carts.ClearAsync(cartKey, ct);
 
         return Results.Created(

@@ -29,6 +29,18 @@ public sealed class NotificationsHub : Hub<INotificationsClient>
             Context.ConnectionId,
             GroupName.Order(orderId));
 
+    [Authorize(Roles = "admin")]
+    public Task JoinAdminOrdersFeed() =>
+        Groups.AddToGroupAsync(
+            Context.ConnectionId,
+            GroupName.AdminOrders);
+
+    [Authorize(Roles = "admin")]
+    public Task LeaveAdminOrdersFeed() =>
+        Groups.RemoveFromGroupAsync(
+            Context.ConnectionId,
+            GroupName.AdminOrders);
+
     public async Task JoinStockGroup(string sku)
     {
         if (string.IsNullOrWhiteSpace(sku))
@@ -74,4 +86,6 @@ public static class GroupName
     public static string Order(Guid orderId) => $"order:{orderId}";
 
     public static string Stock(string sku) => $"stock:{sku}";
+
+    public const string AdminOrders = "admin:orders";
 }

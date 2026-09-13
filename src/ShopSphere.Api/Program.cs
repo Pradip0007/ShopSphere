@@ -48,6 +48,7 @@ using ShopSphere.Api.Features.Reviews;
 using ShopSphere.Infrastructure.Audit;
 using ShopSphere.Api.Features.Admin;
 using ShopSphere.Api.SignalR;
+using ShopSphere.Api.Features.Orders.OrderBrodcast;
 using IDatabase = StackExchange.Redis.IDatabase;
 
 
@@ -276,6 +277,8 @@ builder.Services.Scan(scan => scan
 builder.Services.AddSingleton<
     IIntegrationEventMapperResolver,
     IntegrationEventMapperResolver>();
+
+builder.Services.AddSingleton<IOrderStatusBroadcaster, OrderStatusBroadcaster>();
 
 builder.Services.AddSignalR(o =>
 {

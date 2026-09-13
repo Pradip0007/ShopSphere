@@ -1,7 +1,10 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
+
 import { AddressBlock } from './AddressBlock';
 import { orderDetailQueryOptions } from './queries';
 import { StatusBadge } from './StatusBadge';
+import type { OrderStatus } from './types';
+import { useOrderStatus } from './useOrderStatus';
 
 interface OrderDetailProps {
   id: string;
@@ -9,6 +12,7 @@ interface OrderDetailProps {
 
 export function OrderDetail({ id }: OrderDetailProps): React.JSX.Element {
   const { data: order } = useSuspenseQuery(orderDetailQueryOptions(id));
+  const liveStatus = useOrderStatus(order.id, order.status);
 
   const money = (amount: number): string =>
     new Intl.NumberFormat(undefined, {
@@ -25,7 +29,7 @@ export function OrderDetail({ id }: OrderDetailProps): React.JSX.Element {
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-semibold">Order {order.number}</h1>
 
-          <StatusBadge status={order.status} />
+          <StatusBadge status={liveStatus as OrderStatus} />
         </div>
 
         <p className="text-sm text-[var(--color-text-muted)]">
@@ -62,25 +66,21 @@ export function OrderDetail({ id }: OrderDetailProps): React.JSX.Element {
 
       <section className="ml-auto grid max-w-sm gap-2">
         <div className="flex items-center justify-between gap-8 text-sm">
-          {' '}
           <span>Subtotal</span>
           <span>{money(order.subtotalAmount)}</span>
         </div>
 
         <div className="flex items-center justify-between gap-8 text-sm">
-          {' '}
           <span>Shipping</span>
           <span>{optionalMoney(order.shippingAmount)}</span>
         </div>
 
         <div className="flex items-center justify-between gap-8 text-sm">
-          {' '}
           <span>Tax</span>
           <span>{optionalMoney(order.taxAmount)}</span>
         </div>
 
         <div className="flex items-center justify-between gap-8 border-t border-[var(--color-border)] pt-2 text-lg font-semibold">
-          {' '}
           <span>Total</span>
           <span>{money(order.totalAmount)}</span>
         </div>
