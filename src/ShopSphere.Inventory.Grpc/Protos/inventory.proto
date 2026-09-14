@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+option csharp_namespace = "ShopSphere.Inventory.Grpc";
+
+package shopsphere.inventory.v1;
+
+service InventoryService {
+  rpc ReserveStock (ReserveStockRequest) returns (ReserveStockResponse);
+  rpc ReleaseStock (ReleaseStockRequest) returns (ReleaseStockResponse);
+  rpc StreamLowStock (LowStockRequest) returns (stream LowStockEvent);
+}
+
+message ReserveStockRequest {
+  string sku = 1;
+  int32 quantity = 2;
+  string order_id = 3;
+}
+
+message ReserveStockResponse {
+  bool success = 1;
+  int32 remaining = 2;
+  string message = 3;
+}
+
+message ReleaseStockRequest {
+  string sku = 1;
+  int32 quantity = 2;
+  string order_id = 3;
+}
+
+message ReleaseStockResponse {
+  bool success = 1;
+  int32 remaining = 2;
+  string message = 3;
+}
+
+message LowStockRequest {
+  int32 threshold = 1;
+}
+
+message LowStockEvent {
+  string sku = 1;
+  int32 available = 2;
+  string timestamp = 3;
+}
