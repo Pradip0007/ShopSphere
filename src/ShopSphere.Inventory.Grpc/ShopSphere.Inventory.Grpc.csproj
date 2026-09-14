@@ -14,10 +14,14 @@
 
   <ItemGroup>
     <PackageReference Include="Grpc.AspNetCore" />
+    <PackageReference Include="Grpc.AspNetCore.HealthChecks" />
+    <PackageReference Include="MassTransit.RabbitMQ" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ShopSphere.ServiceDefaults\ShopSphere.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\ShopSphere.Contracts\ShopSphere.Contracts.csproj" />
+    <ProjectReference Include="..\ShopSphere.Infrastructure\ShopSphere.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

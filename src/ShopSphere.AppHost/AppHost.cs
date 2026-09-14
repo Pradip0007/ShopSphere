@@ -18,6 +18,7 @@ var sql = builder.AddSqlServer("sql")
 
 var inventoryGrpc = builder.AddProject<Projects.ShopSphere_Inventory_Grpc>("inventory-grpc")
     .WithReference(sql)
+    .WithReference(rabbit)
     .WaitFor(sql);
 
 var api = builder.AddProject<Projects.ShopSphere_Api>("api")
