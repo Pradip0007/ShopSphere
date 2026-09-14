@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ShopSphere.Api\ShopSphere.Api.csproj" />
     <ProjectReference Include="..\ShopSphere.Workers\ShopSphere.Workers.csproj" />
+    <ProjectReference Include="..\ShopSphere.Inventory.Grpc\ShopSphere.Inventory.Grpc.csproj" />
   </ItemGroup>
 
   <ItemGroup>

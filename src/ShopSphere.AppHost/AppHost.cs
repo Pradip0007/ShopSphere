@@ -16,10 +16,15 @@ var sql = builder.AddSqlServer("sql")
     .WithDataVolume()
     .AddDatabase("shopsphere");
 
+var inventoryGrpc = builder.AddProject<Projects.ShopSphere_Inventory_Grpc>("inventory-grpc")
+    .WithReference(sql)
+    .WaitFor(sql);
+
 var api = builder.AddProject<Projects.ShopSphere_Api>("api")
     .WithReference(cache)
     .WithReference(sql)
     .WithReference(rabbit)
+    .WithReference(inventoryGrpc)
     .WithEnvironment("Email__Host", "localhost")
     .WithEnvironment("Email__Port", "1025")
     .WaitFor(sql);
