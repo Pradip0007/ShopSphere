@@ -189,4 +189,53 @@ public sealed class OrderTests
 
         act.Should().Throw<InvalidOperationException>();
     }
+
+    [Fact]
+    public void Place_should_reject_empty_user_id_null_lines_and_null_address()
+    {
+        var item = NewItem();
+
+        var emptyUser = () => Order.Place(Guid.Empty, [item], NewAddress());
+        var nullLines = () => Order.Place(Guid.NewGuid(), null!, NewAddress());
+        var nullAddress = () => Order.Place(Guid.NewGuid(), [item], null!);
+
+        emptyUser.Should().Throw<ArgumentOutOfRangeException>();
+        nullLines.Should().Throw<ArgumentNullException>();
+        nullAddress.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void Order_should_reject_reserving_inventory_after_cancellation()
+    {
+        var order = Order.Place(Guid.NewGuid(), [NewItem()], NewAddress());
+        order.Cancel();
+
+        var act = () => order.MarkInventoryReserved();
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void Order_should_reject_confirming_before_payment_authorization()
+    {
+        var order = Order.Place(Guid.NewGuid(), [NewItem()], NewAddress());
+        order.MarkInventoryReserved();
+
+        var act = () => order.MarkConfirmed();
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void OrderPlaced_event_should_reference_order_and_placement_time()
+    {
+        var order = Order.Place(Guid.NewGuid(), [NewItem()], NewAddress());
+
+        var @event = order.DomainEvents.Single() as OrderPlacedEvent;
+
+        @event.Should().NotBeNull();
+        @event!.Order.Should().BeSameAs(order);
+        @event.OccurredAt.Should().Be(order.PlacedAtUtc);
+        @event.EventId.Should().NotBe(Guid.Empty);
+    }
 }

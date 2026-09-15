@@ -108,4 +108,113 @@ public sealed class StockLevelTests
         stock.DomainEvents.Should()
             .ContainSingle(e => e is StockDepletedEvent);
     }
+
+    [Fact]
+    public void Create_should_set_product_sku_and_available_counts()
+    {
+        var productId = ProductId.New();
+        var sku = Sku.From("STOCK-1");
+
+        var stock = StockLevel.Create(productId, sku, 4);
+
+        stock.ProductId.Should().Be(productId);
+        stock.Sku.Should().Be(sku);
+        stock.Available.Should().Be(4);
+        stock.Reserved.Should().Be(0);
+        stock.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Create_should_reject_negative_initial_stock()
+    {
+        var act = () => StockLevel.Create(ProductId.New(), Sku.From("STOCK-1"), -1);
+
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void Create_should_reject_null_sku()
+    {
+        var act = () => StockLevel.Create(ProductId.New(), null!, 0);
+
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void Reserve_should_reject_non_positive_quantity(int quantity)
+    {
+        var result = NewStock().Reserve(quantity);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("inventory.quantity_not_positive");
+    }
+
+    [Fact]
+    public void Reserve_should_raise_event_with_updated_counts()
+    {
+        var stock = NewStock(10);
+
+        stock.Reserve(3);
+
+        var @event = stock.DomainEvents.Should().ContainSingle().Which.Should()
+            .BeOfType<StockReservedEvent>().Subject;
+
+        @event.StockLevelId.Should().Be(stock.Id);
+        @event.ProductId.Should().Be(stock.ProductId);
+        @event.Quantity.Should().Be(3);
+        @event.AvailableAfter.Should().Be(7);
+        @event.ReservedAfter.Should().Be(3);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void Release_should_reject_non_positive_quantity(int quantity)
+    {
+        var result = NewStock().Release(quantity);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("inventory.quantity_not_positive");
+    }
+
+    [Fact]
+    public void Release_should_raise_event_with_updated_counts()
+    {
+        var stock = NewStock(10);
+        stock.Reserve(4);
+        stock.ClearDomainEvents();
+
+        stock.Release(2);
+
+        var @event = stock.DomainEvents.Should().ContainSingle().Which.Should()
+            .BeOfType<StockReleasedEvent>().Subject;
+
+        @event.StockLevelId.Should().Be(stock.Id);
+        @event.ProductId.Should().Be(stock.ProductId);
+        @event.Quantity.Should().Be(2);
+        @event.AvailableAfter.Should().Be(8);
+        @event.ReservedAfter.Should().Be(2);
+    }
+
+    [Fact]
+    public void Adjust_to_zero_from_positive_should_raise_depleted_event()
+    {
+        var stock = NewStock(5);
+
+        stock.Adjust(-5);
+
+        stock.DomainEvents.Should().ContainSingle(e => e is StockDepletedEvent);
+    }
+
+    [Fact]
+    public void Adjust_when_already_zero_should_not_raise_depleted_event()
+    {
+        var stock = NewStock(0);
+
+        stock.Adjust(0);
+
+        stock.DomainEvents.Should().BeEmpty();
+    }
 }

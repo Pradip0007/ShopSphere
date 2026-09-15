@@ -192,4 +192,109 @@ public sealed class ProductTests
             .Throw<ArgumentException>()
             .WithMessage("*4000 characters*");
     }
+
+    [Fact]
+    public void Create_should_trim_title_and_accept_explicit_slug()
+    {
+        var slug = Slug.From("custom-product");
+
+        var product = Product.Create(
+            "  Product  ", "Description", Sku.From("TEST-SKU-4"), CategoryId.New(),
+            new Money(1m, "USD"), slug);
+
+        product.Title.Should().Be("Product");
+        product.Slug.Should().Be(slug);
+    }
+
+    [Fact]
+    public void Create_should_reject_null_description_sku_and_price()
+    {
+        var validSku = Sku.From("TEST-SKU-5");
+        var categoryId = CategoryId.New();
+
+        var nullDescription = () => Product.Create("Title", null!, validSku, categoryId, new Money(1m, "USD"));
+        var nullSku = () => Product.Create("Title", "Description", null!, categoryId, new Money(1m, "USD"));
+        var nullPrice = () => Product.Create("Title", "Description", validSku, categoryId, null!);
+
+        nullDescription.Should().Throw<ArgumentNullException>();
+        nullSku.Should().Throw<ArgumentNullException>();
+        nullPrice.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void Rename_should_trim_title_before_generating_slug()
+    {
+        var product = TestBuilders.Draft();
+
+        product.Rename("  Fresh Product  ");
+
+        product.Title.Should().Be("Fresh Product");
+        product.Slug.Value.Should().Be("fresh-product");
+    }
+
+    [Fact]
+    public void ChangePrice_should_reject_null_price()
+    {
+        var act = () => TestBuilders.Draft().ChangePrice(null!);
+
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void UpdateDescription_should_reject_null_description()
+    {
+        var act = () => TestBuilders.Draft().UpdateDescription(null!);
+
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void Unarchive_should_leave_draft_product_unchanged()
+    {
+        var product = TestBuilders.Draft();
+
+        product.Unarchive();
+
+        product.Status.Should().Be(ProductStatus.Draft);
+    }
+
+    [Fact]
+    public void Publish_should_include_product_details_in_event()
+    {
+        var product = TestBuilders.Draft();
+
+        product.Publish();
+
+        var @event = product.DomainEvents.Should().ContainSingle().Which.Should()
+            .BeOfType<ProductPublishedEvent>().Subject;
+
+        @event.ProductId.Should().Be(product.Id);
+        @event.Sku.Should().Be(product.Sku);
+        @event.CategoryId.Should().Be(product.CategoryId);
+        @event.Price.Should().Be(product.Price);
+    }
+
+    [Fact]
+    public void Archive_should_fail_when_product_is_archived()
+    {
+        var product = TestBuilders.Draft();
+        product.Publish();
+        product.Archive();
+
+        var act = () => product.Archive();
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void Publish_should_fail_when_product_is_archived()
+    {
+        var product = TestBuilders.Draft();
+        product.Publish();
+        product.Archive();
+
+        var act = () => product.Publish();
+
+        act.Should().Throw<InvalidOperationException>();
+    }
 }
