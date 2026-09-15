@@ -235,13 +235,31 @@ public sealed class InventoryService(
             ? request.Threshold
             : LowStockThreshold;
 
-        await foreach (var evt in lowStockChannel.Reader.ReadAllAsync(
-            context.CancellationToken))
+        logger.LogInformation(
+            "LowStock stream opened for peer {Peer} threshold={Threshold}",
+            context.Peer,
+            threshold);
+
+        try
         {
-            if (evt.Available <= threshold)
+            await foreach (var evt in lowStockChannel.Subscribe(
+                threshold,
+                context.CancellationToken))
             {
-                await responseStream.WriteAsync(evt);
+                await responseStream.WriteAsync(
+                    evt,
+                    context.CancellationToken);
             }
+        }
+        catch (OperationCanceledException)
+        {
+            // Client disconnected — normal termination.
+        }
+        finally
+        {
+            logger.LogInformation(
+                "LowStock stream closed for peer {Peer}",
+                context.Peer);
         }
     }
 
