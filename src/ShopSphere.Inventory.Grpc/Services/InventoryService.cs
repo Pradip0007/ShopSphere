@@ -5,6 +5,7 @@ using ShopSphere.Infrastructure.Persistence;
 using MassTransit;
 using ShopSphere.Contracts.Events;
 using ShopSphere.Inventory.Grpc.Streaming;
+using ShopSphere.Domain.Catalog;
 
 namespace ShopSphere.Inventory.Grpc.Services;
 
@@ -25,9 +26,11 @@ public sealed class InventoryService(
 
         var orderId = Guid.Parse(request.OrderId);
 
+        var sku = Sku.From(request.Sku);
+
         var stock = await db.StockLevels
             .SingleOrDefaultAsync(
-                stockLevel => stockLevel.Sku.Value == request.Sku,
+                stockLevel => stockLevel.Sku == sku,
                 context.CancellationToken);
 
         if (stock is null)
@@ -132,9 +135,11 @@ public sealed class InventoryService(
 
         var orderId = Guid.Parse(request.OrderId);
 
+        var sku = Sku.From(request.Sku);
+
         var stock = await db.StockLevels
             .SingleOrDefaultAsync(
-                stockLevel => stockLevel.Sku.Value == request.Sku,
+                stockLevel => stockLevel.Sku == sku,
                 context.CancellationToken);
 
         if (stock is null)

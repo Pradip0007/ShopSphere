@@ -1,18 +1,16 @@
 using MassTransit;
-using Microsoft.EntityFrameworkCore;
-using ShopSphere.Contracts.Events;
-using ShopSphere.Api.Infrastructure.Messaging;
-using ShopSphere.Domain.Catalog;
-using ShopSphere.Domain.Ordering;
-using ShopSphere.Infrastructure.Persistence;
 using Microsoft.AspNetCore.SignalR;
+using ShopSphere.Api.Features.Inventory;
+using ShopSphere.Api.Infrastructure.Messaging;
 using ShopSphere.Api.SignalR;
+using ShopSphere.Contracts.Events;
+using ShopSphere.Domain.Ordering;
 using ShopSphere.Api.Features.Orders.OrderBrodcast;
 
 namespace ShopSphere.Api.Consumers;
 
 public sealed class InventoryReservationConsumer(
-    ShopSphereDbContext db,
+    IInventoryClient inventory,
     IOrderRepository orders,
     IProcessedMessageStore processed,
     IHubContext<NotificationsHub, INotificationsClient> hub,
@@ -25,95 +23,125 @@ public sealed class InventoryReservationConsumer(
     public async Task Consume(ConsumeContext<OrderPlaced> context)
     {
         var messageId = context.MessageId
-            ?? throw new InvalidOperationException("Missing MessageId — is MassTransit configured correctly?");
+            ?? throw new InvalidOperationException(
+                "Missing MessageId — is MassTransit configured correctly?");
 
-        if (!await processed.TryMarkAsync(messageId, ConsumerName, context.CancellationToken))
+        if (!await processed.TryMarkAsync(
+                messageId,
+                ConsumerName,
+                context.CancellationToken))
         {
-            logger.LogInformation("Skipping duplicate OrderPlaced messageId={MessageId}", messageId);
+            logger.LogInformation(
+                "Skipping duplicate OrderPlaced messageId={MessageId}",
+                messageId);
+
             return;
         }
 
         var msg = context.Message;
-        var reservedSoFar = new List<(Domain.Inventory.StockLevel Stock, int Qty)>();
-        var failures = new List<InventoryLineFailure>();
 
-        // Reserve each line via the real domain aggregate.
+        var reservedLines =
+            new List<(string Sku, int Quantity, int AvailableAfter)>();
+
+        var failures =
+            new List<InventoryLineFailure>();
+
         foreach (var line in msg.Lines)
         {
-            var pid = new ProductId(line.ProductId);
-            var stock = await db.StockLevels.SingleOrDefaultAsync(s => s.ProductId == pid, context.CancellationToken);
-            if (stock is null)
+            var result = await inventory.ReserveAsync(
+                msg.OrderId,
+                line.Sku,
+                line.Quantity,
+                context.CancellationToken);
+
+            if (!result.Success)
             {
-                failures.Add(new InventoryLineFailure(line.ProductId, line.Sku, line.Quantity, 0));
+                failures.Add(
+                    new InventoryLineFailure(
+                        line.ProductId,
+                        line.Sku,
+                        line.Quantity,
+                        result.AvailableAfter));
+
                 continue;
             }
 
-            var result = stock.Reserve(line.Quantity);
-            if (result.IsFailure)
-            {
-                failures.Add(new InventoryLineFailure(line.ProductId, stock.Sku.Value, line.Quantity, stock.Available));
-            }
-            else
-            {
-                reservedSoFar.Add((stock, line.Quantity));
-            }
+            reservedLines.Add(
+                (line.Sku, line.Quantity, result.AvailableAfter));
         }
 
         if (failures.Count > 0)
         {
-            // Compensate: release everything we reserved so far in this consume.
-            // (Day 47 also handles cross-consume compensation via a saga.)
-            foreach (var (stock, qty) in reservedSoFar)
-                stock.Release(qty);
+            foreach (var reserved in reservedLines)
+            {
+                await inventory.ReleaseAsync(
+                    msg.OrderId,
+                    reserved.Sku,
+                    reserved.Quantity,
+                    context.CancellationToken);
+            }
 
             logger.LogWarning(
                 "Inventory reservation failed for orderId={OrderId} failures={FailureCount}",
-                msg.OrderId, failures.Count);
-
-            await context.Publish(new InventoryReservationFailed(
                 msg.OrderId,
-                Reason: "One or more lines had insufficient stock.",
-                Failures: failures,
-                FailedAtUtc: DateTimeOffset.UtcNow),
+                failures.Count);
+
+            await context.Publish(
+                new InventoryReservationFailed(
+                    msg.OrderId,
+                    Reason: "One or more lines had insufficient stock.",
+                    Failures: failures,
+                    FailedAtUtc: DateTimeOffset.UtcNow),
                 context.CancellationToken);
+
             return;
         }
 
-        // Transition the persisted Order to InventoryReserved.
-        var order = await orders.FindAsync(new OrderId(msg.OrderId), context.CancellationToken);
+        var order = await orders.FindAsync(
+            new OrderId(msg.OrderId),
+            context.CancellationToken);
+
         if (order is null)
         {
-            logger.LogError("Order {OrderId} vanished between publish and consume — this should never happen.", msg.OrderId);
+            logger.LogError(
+                "Order {OrderId} vanished between publish and consume — this should never happen.",
+                msg.OrderId);
+
             return;
         }
+
         order.MarkInventoryReserved();
 
-        await db.SaveChangesAsync(context.CancellationToken);
+        await orders.SaveChangesAsync(
+        context.CancellationToken);
 
         await broadcaster.BroadcastAsync(
-    order.Id.Value,
-    OrderStatus.InventoryReserved,
-    context.CancellationToken);
+            order.Id.Value,
+            OrderStatus.InventoryReserved,
+            context.CancellationToken);
 
-        // Broadcast the new availability after the database save succeeds.
-        foreach (var (stock, _) in reservedSoFar)
+        foreach (var reserved in reservedLines)
         {
             var evt = new StockChangedEvent(
-                stock.Sku.Value,
-                stock.Available,
+                reserved.Sku,
+                reserved.AvailableAfter,
                 DateTimeOffset.UtcNow);
 
             await hub
                 .Clients
-                .Group(GroupName.Stock(stock.Sku.Value))
+                .Group(GroupName.Stock(reserved.Sku))
                 .StockChanged(evt);
         }
 
         logger.LogInformation(
             "Inventory reserved for orderId={OrderId} lineCount={LineCount}",
-            msg.OrderId, msg.Lines.Count);
+            msg.OrderId,
+            msg.Lines.Count);
 
-        await context.Publish(new InventoryReserved(msg.OrderId, DateTimeOffset.UtcNow),
+        await context.Publish(
+            new InventoryReserved(
+                msg.OrderId,
+                DateTimeOffset.UtcNow),
             context.CancellationToken);
     }
 }
