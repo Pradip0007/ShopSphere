@@ -23,6 +23,18 @@ public sealed class MoneyTests
             .WithMessage("*3-letter ISO 4217 code*");
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("  ")]
+    [InlineData("US1")]
+    [InlineData("US D")]
+    public void Constructor_should_reject_blank_or_non_letter_currency(string currency)
+    {
+        var act = () => new Money(10m, currency);
+
+        act.Should().Throw<ArgumentException>();
+    }
+
     [Fact]
     public void Zero_should_create_zero_money()
     {
@@ -89,6 +101,23 @@ public sealed class MoneyTests
         act.Should()
             .Throw<InvalidOperationException>()
             .WithMessage("*Currency mismatch*");
+    }
+
+    [Fact]
+    public void Subtraction_should_reject_different_currencies()
+    {
+        var act = () => new Money(10m, "USD") - new Money(5m, "EUR");
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*Currency mismatch*");
+    }
+
+    [Fact]
+    public void Money_should_use_value_equality()
+    {
+        var left = new Money(10m, "usd");
+        var right = new Money(10m, "USD");
+
+        left.Should().Be(right);
     }
 
     [Fact]

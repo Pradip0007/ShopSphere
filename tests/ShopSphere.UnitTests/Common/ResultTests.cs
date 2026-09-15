@@ -120,4 +120,30 @@ public sealed class ResultTests
 
         value.Should().Be("Test.Code");
     }
+
+    [Fact]
+    public void Result_should_use_value_equality()
+    {
+        Result.Success().Should().Be(Result.Success());
+        Result.Failure(new Error("Test.Code", "Message"))
+            .Should().Be(Result.Failure(new Error("Test.Code", "Message")));
+    }
+
+    [Fact]
+    public void Generic_result_should_use_value_equality()
+    {
+        Result<int>.Success(42).Should().Be(Result<int>.Success(42));
+        Result<int>.Failure(new Error("Test.Code", "Message"))
+            .Should().Be(Result<int>.Failure(new Error("Test.Code", "Message")));
+    }
+
+    [Fact]
+    public void Generic_match_should_pass_success_value_to_handler()
+    {
+        var result = Result<string>.Success("value");
+
+        var value = result.Match(success => success, _ => "failure");
+
+        value.Should().Be("value");
+    }
 }
