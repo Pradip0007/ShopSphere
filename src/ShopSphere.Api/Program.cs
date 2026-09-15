@@ -49,6 +49,8 @@ using ShopSphere.Infrastructure.Audit;
 using ShopSphere.Api.Features.Admin;
 using ShopSphere.Api.SignalR;
 using ShopSphere.Api.Features.Orders.OrderBrodcast;
+using ShopSphere.Inventory.Grpc;
+using ShopSphere.Api.Features.Inventory;
 using IDatabase = StackExchange.Redis.IDatabase;
 
 
@@ -287,6 +289,20 @@ builder.Services.AddSignalR(o =>
     o.KeepAliveInterval = TimeSpan.FromSeconds(15);
     o.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
 });
+
+builder.Services
+    .AddGrpcClient<InventoryService.InventoryServiceClient>(o =>
+    {
+        o.Address = new Uri("https://inventory-grpc");
+    })
+    .AddStandardResilienceHandler(o =>
+    {
+        o.AttemptTimeout.Timeout = TimeSpan.FromSeconds(5);
+        o.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(15);
+        o.Retry.MaxRetryAttempts = 3;
+    });
+
+builder.Services.AddScoped<IInventoryClient, GrpcInventoryClient>();
 
 var app = builder.Build();
 

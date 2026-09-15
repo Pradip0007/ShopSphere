@@ -24,10 +24,12 @@
     <ProjectReference Include="..\ShopSphere.ServiceDefaults\ShopSphere.ServiceDefaults.csproj" />
     <ProjectReference Include="..\ShopSphere.Domain\ShopSphere.Domain.csproj" />
     <ProjectReference Include="..\ShopSphere.Infrastructure\ShopSphere.Infrastructure.csproj" />
+
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
-    <PrivateAssets>all</PrivateAssets>
-    <IncludeAssets>runtime;build;native;contentfiles;analyzers;buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime;build;native;contentfiles;analyzers;buildtransitive</IncludeAssets>
     </PackageReference>
+
     <PackageReference Include="MediatR" />
     <PackageReference Include="FluentValidation" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
@@ -37,10 +39,23 @@
     <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+
+    <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="Grpc.Net.ClientFactory" />
+    <PackageReference Include="Grpc.Tools">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ShopSphere.Contracts\ShopSphere.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf
+      Include="..\ShopSphere.Inventory.Grpc\Protos\inventory.proto"
+      GrpcServices="Client"
+      ProtoRoot="..\ShopSphere.Inventory.Grpc\Protos" />
   </ItemGroup>
 
 </Project>
