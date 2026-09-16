@@ -1,3 +1,6 @@
+using FluentAssertions;
+using NetArchTest.Rules;
+
 namespace ShopSphere.ArchitectureTests;
 
 public sealed class DomainIsolationTests
