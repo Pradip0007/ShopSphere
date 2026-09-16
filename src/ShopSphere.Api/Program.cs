@@ -381,3 +381,4 @@ app.MapCheckoutEndpoints();
 app.MapEndpoints(versionedGroup);
 
 app.Run();
+public partial class Program { }
