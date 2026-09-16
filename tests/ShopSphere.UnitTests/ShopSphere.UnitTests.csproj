@@ -20,10 +20,16 @@
     <PackageReference Include="AutoFixture.Xunit2" />
     <PackageReference Include="AutoFixture.AutoMoq" />
     <PackageReference Include="coverlet.collector" />
+
+    <PackageReference Include="Moq" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\ShopSphere.Domain\ShopSphere.Domain.csproj" />
+    <ProjectReference Include="..\..\src\ShopSphere.Infrastructure\ShopSphere.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\ShopSphere.Api\ShopSphere.Api.csproj" />
   </ItemGroup>
 
 </Project>
