@@ -18,7 +18,8 @@ public sealed class ContainerFixture : IAsyncLifetime
         .WithImage("rabbitmq:3.13-management-alpine")
         .Build();
 
-    public string SqlConnectionString => _sqlServer.GetConnectionString();
+    public string SqlConnectionString =>
+        $"{_sqlServer.GetConnectionString()};MultipleActiveResultSets=True";
 
     public string RedisConnectionString => _redis.GetConnectionString();
 
