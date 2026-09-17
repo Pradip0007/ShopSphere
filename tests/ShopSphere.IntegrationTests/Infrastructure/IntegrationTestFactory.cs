@@ -12,7 +12,7 @@ using ShopSphere.IntegrationTests.Common;
 
 namespace ShopSphere.IntegrationTests.Infrastructure;
 
-public sealed class IntegrationTestFactory
+public class IntegrationTestFactory
     : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly ContainerFixture _containers;
