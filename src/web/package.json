@@ -13,7 +13,12 @@
     "lint:fix": "biome check --write ./src",
     "format": "biome format --write ./src",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:codegen": "playwright codegen http://localhost:5173",
+    "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
@@ -41,6 +46,7 @@
     "@axe-core/react": "^4.13.0",
     "@biomejs/biome": "2.5.11",
     "@chromatic-com/storybook": "latest",
+    "@playwright/test": "^1.63.0",
     "@storybook/addon-a11y": "10.5.10",
     "@storybook/addon-docs": "10.5.10",
     "@storybook/addon-vitest": "10.5.10",
