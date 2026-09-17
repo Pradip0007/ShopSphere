@@ -6,6 +6,7 @@ public enum OrderStatus
     InventoryReserved = 10,
     PaymentAuthorized = 20,
     Confirmed = 30,
+    PaymentFailed = 35,
     Shipped = 40,
     Delivered = 50,
     Cancelled = 90,

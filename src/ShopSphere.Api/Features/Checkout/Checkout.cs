@@ -1,9 +1,11 @@
 using System.Security.Claims;
+using System.Text.Json;
 using ShopSphere.Api.Features.Cart;
 using ShopSphere.Domain.Cart;
 using ShopSphere.Domain.Catalog;
 using ShopSphere.Domain.Ordering;
 using ShopSphere.Api.Features.Orders.OrderBrodcast;
+using RedisDatabase = StackExchange.Redis.IDatabase;
 
 namespace ShopSphere.Api.Features.Checkout;
 
@@ -22,6 +24,7 @@ public static class CheckoutFeature
         IProductRepository products,
         IOrderRepository orders,
         IOrderStatusBroadcaster broadcaster,
+        RedisDatabase cache,
         CancellationToken ct)
     {
         var userIdClaim = http.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
@@ -29,6 +32,26 @@ public static class CheckoutFeature
         if (!Guid.TryParse(userIdClaim, out var userId))
         {
             return Results.Unauthorized();
+        }
+
+        var idempotencyKey = http.Request.Headers["Idempotency-Key"].FirstOrDefault();
+        var idempotencyCacheKey = string.IsNullOrWhiteSpace(idempotencyKey)
+            ? null
+            : $"checkout:idempotency:{userId:D}:{idempotencyKey}";
+
+        if (idempotencyCacheKey is not null)
+        {
+            var cached = await cache.StringGetAsync(idempotencyCacheKey);
+            if (cached.HasValue)
+            {
+                var cachedResponse = JsonSerializer.Deserialize<Response>(cached.ToString());
+                if (cachedResponse is not null)
+                {
+                    return Results.Created(
+                        $"/api/v1/orders/{cachedResponse.OrderId:D}",
+                        cachedResponse);
+                }
+            }
         }
 
         var cartKey = CartKey.User(userId);
@@ -72,8 +95,22 @@ public static class CheckoutFeature
     ct);
         await carts.ClearAsync(cartKey, ct);
 
+        var response = new Response(
+            order.Id.Value,
+            order.Subtotal.Amount,
+            order.Subtotal.Currency,
+            order.Items.Count);
+
+        if (idempotencyCacheKey is not null)
+        {
+            await cache.StringSetAsync(
+                idempotencyCacheKey,
+                JsonSerializer.Serialize(response),
+                TimeSpan.FromMinutes(30));
+        }
+
         return Results.Created(
             $"/api/v1/orders/{order.Id.Value:D}",
-            new Response(order.Id.Value, order.Subtotal.Amount, order.Subtotal.Currency, order.Items.Count));
+            response);
     }
 }

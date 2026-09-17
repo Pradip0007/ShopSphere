@@ -91,6 +91,7 @@ public sealed class GetOrderEndpoint : IEndpoint
             OrderStatus.Pending => "Pending",
             OrderStatus.InventoryReserved => "Pending",
             OrderStatus.PaymentAuthorized => "Paid",
+            OrderStatus.PaymentFailed => "PaymentFailed",
             OrderStatus.Confirmed => "Confirmed",
             OrderStatus.Shipped => "Shipped",
             OrderStatus.Delivered => "Delivered",

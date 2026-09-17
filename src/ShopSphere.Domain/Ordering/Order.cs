@@ -80,6 +80,13 @@ public sealed class Order : AggregateRoot<OrderId>
         Status = OrderStatus.Confirmed;
     }
 
+    public void MarkPaymentFailed()
+    {
+        if (Status != OrderStatus.InventoryReserved)
+            throw new InvalidOperationException($"Cannot fail payment in state {Status}.");
+        Status = OrderStatus.PaymentFailed;
+    }
+
     public void Cancel()
     {
         if (Status is OrderStatus.Shipped or OrderStatus.Delivered)
