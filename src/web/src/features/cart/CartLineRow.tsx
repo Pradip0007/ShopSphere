@@ -59,6 +59,7 @@ export function CartLineRow({ line }: CartLineRowProps): React.JSX.Element {
         <Button
           variant="ghost"
           size="sm"
+          data-testid="cart-line-remove"
           className="ml-auto"
           disabled={isUpdating || isRemoving}
           onClick={() => {
