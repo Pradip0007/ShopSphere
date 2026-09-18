@@ -10,7 +10,10 @@ export function CartBadge(): React.JSX.Element {
       <span>Cart</span>
 
       {count > 0 && (
-        <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-brand-500 px-1 text-xs text-white">
+        <span
+          data-testid="cart-count"
+          className="inline-flex min-w-5 items-center justify-center rounded-full bg-brand-500 px-1 text-xs text-white"
+        >
           {count}
         </span>
       )}
