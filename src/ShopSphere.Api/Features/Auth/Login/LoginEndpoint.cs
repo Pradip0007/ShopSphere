@@ -37,6 +37,7 @@ public sealed class LoginEndpoint : IEndpoint
             .WithDescription("Returns a 15-minute access token. Refresh tokens land on Day 28.")
             .Produces<LoginResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .AllowAnonymous();
+            .AllowAnonymous()
+            .RequireRateLimiting("auth");
     }
 }

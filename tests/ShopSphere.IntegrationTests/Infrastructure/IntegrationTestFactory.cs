@@ -18,12 +18,24 @@ public class IntegrationTestFactory
     private readonly ContainerFixture _containers;
     private Respawner? _respawner;
 
-    public IntegrationTestFactory(ContainerFixture containers)
-        => _containers = containers;
+    private readonly bool _enableRateLimiter;
+
+    public IntegrationTestFactory(
+        ContainerFixture containers,
+        bool enableRateLimiter = false)
+    {
+        _containers = containers;
+        _enableRateLimiter = enableRateLimiter;
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
+
+        builder.UseSetting(
+        "RateLimiter:Enabled",
+        _enableRateLimiter.ToString());
+
         builder.ConfigureLogging(logging =>
         {
             logging.ClearProviders();

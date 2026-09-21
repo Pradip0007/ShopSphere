@@ -22,6 +22,7 @@ public sealed class RegisterEndpoint : IEndpoint
             .WithDescription("Creates a new user account. Argon2id-hashed password. No PII beyond email is required.")
             .Produces<RegisterResponse>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status409Conflict)
-            .AllowAnonymous();
+            .AllowAnonymous()
+            .RequireRateLimiting("auth");
     }
 }

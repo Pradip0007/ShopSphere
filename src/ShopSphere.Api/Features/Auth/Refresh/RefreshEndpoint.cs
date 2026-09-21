@@ -51,6 +51,7 @@ public sealed class RefreshEndpoint : IEndpoint
             .WithDescription("Presents a refresh token; returns a new pair. If the presented token has already been rotated (reuse), the entire family is revoked.")
             .Produces<RefreshResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .AllowAnonymous();
+            .AllowAnonymous()
+            .RequireRateLimiting("auth");
     }
 }

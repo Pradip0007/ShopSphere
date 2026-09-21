@@ -13,6 +13,7 @@ public static class StripeWebhookEndpoint
     public static IEndpointRouteBuilder MapStripeWebhook(this IEndpointRouteBuilder routes)
     {
         routes.MapPost("/api/v1/webhooks/stripe", HandleAsync)
+            .RequireRateLimiting("stripe-webhook")
             .WithTags("Webhooks")
             .AllowAnonymous();
 
