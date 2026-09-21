@@ -93,6 +93,17 @@ if (rateLimiterEnabled)
 
 builder.AddServiceDefaults();
 
+var origins = builder.Configuration
+    .GetSection("Cors:Origins")
+    .Get<string[]>() ?? Array.Empty<string>();
+
+builder.Services.AddCors(o => o.AddDefaultPolicy(p => p
+    .WithOrigins(origins)
+    .AllowCredentials()
+    .AllowAnyHeader()
+    .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE")
+    .WithExposedHeaders("Idempotency-Key", "X-Correlation-Id")));
+
 builder.Services.AddShopSphereRedis(builder.Configuration);
 builder.Services.AddShopSphereCart();
 builder.Services.AddShopSphereMessaging(builder.Configuration);
@@ -345,6 +356,12 @@ app.UseExceptionHandler();
 
 app.MapDefaultEndpoints();
 
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
+
 app.MapGet(
     "/",
     () => Results.Redirect("/scalar/v1"));
@@ -406,6 +423,8 @@ if (rateLimiterEnabled)
 {
     app.UseRateLimiter();
 }
+
+app.UseCors();
 
 app.UseAuthentication();
 
