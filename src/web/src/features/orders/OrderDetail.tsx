@@ -27,7 +27,9 @@ export function OrderDetail({ id }: OrderDetailProps): React.JSX.Element {
     <article className="grid gap-6">
       <header className="grid gap-2">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold">Order {order.number}</h1>
+          <h1 data-testid="order-number" className="text-2xl font-semibold">
+            Order {order.number}
+          </h1>
 
           <StatusBadge status={liveStatus as OrderStatus} />
         </div>

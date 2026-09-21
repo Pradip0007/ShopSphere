@@ -150,6 +150,7 @@ function CheckoutPage(): React.JSX.Element {
       <WizardSteps steps={[...STEPS]} current={step} />
 
       <form
+        data-testid="checkout-form"
         onSubmit={(event) => {
           void handleSubmit(onSubmit)(event);
         }}
