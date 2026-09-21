@@ -25,6 +25,7 @@ export function AddressFields({ base, register, errors }: AddressFieldsProps): R
     <div className="grid gap-3 md:grid-cols-2">
       <div className="md:col-span-2">
         <FormField
+          data-testid={base === 'shipping' ? 'ship-full-name' : undefined}
           label="Full name"
           autoComplete="name"
           {...register(`${base}.fullName` as const)}
@@ -34,6 +35,7 @@ export function AddressFields({ base, register, errors }: AddressFieldsProps): R
 
       <div className="md:col-span-2">
         <FormField
+          data-testid={base === 'shipping' ? 'ship-address' : undefined}
           label="Address line 1"
           autoComplete="address-line1"
           {...register(`${base}.line1` as const)}
@@ -51,6 +53,7 @@ export function AddressFields({ base, register, errors }: AddressFieldsProps): R
       </div>
 
       <FormField
+        data-testid={base === 'shipping' ? 'ship-city' : undefined}
         label="City"
         autoComplete="address-level2"
         {...register(`${base}.city` as const)}
@@ -58,6 +61,7 @@ export function AddressFields({ base, register, errors }: AddressFieldsProps): R
       />
 
       <FormField
+        data-testid={base === 'shipping' ? 'ship-postal' : undefined}
         label="Postal code"
         autoComplete="postal-code"
         {...register(`${base}.postalCode` as const)}
@@ -65,6 +69,7 @@ export function AddressFields({ base, register, errors }: AddressFieldsProps): R
       />
 
       <FormField
+        data-testid={base === 'shipping' ? 'ship-country' : undefined}
         label="Country (ISO)"
         autoComplete="country"
         placeholder="IN"
