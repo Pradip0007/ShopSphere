@@ -4,7 +4,9 @@ using ShopSphere.Infrastructure.Persistence;
 
 namespace ShopSphere.IntegrationTests.Infrastructure;
 
-public abstract class IntegrationTestBase(ContainerFixture containers)
+public abstract class IntegrationTestBase(
+    ContainerFixture containers,
+    bool enableRateLimiter = false)
     : IAsyncLifetime
 {
     protected IntegrationTestFactory Factory { get; private set; } = null!;
@@ -28,7 +30,7 @@ public abstract class IntegrationTestBase(ContainerFixture containers)
 
     public async Task InitializeAsync()
     {
-        Factory = new IntegrationTestFactory(containers);
+        Factory = new IntegrationTestFactory(containers, enableRateLimiter);
         Client = Factory.CreateClient();
         await Factory.ResetDatabaseAsync();
     }

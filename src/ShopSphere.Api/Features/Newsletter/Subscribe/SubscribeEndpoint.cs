@@ -22,6 +22,7 @@ public sealed class SubscribeEndpoint : IEndpoint
             .Produces<SubscribeResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status409Conflict)
-            .AllowAnonymous();
+            .AllowAnonymous()
+            .RequireRateLimiting("newsletter");
     }
 }

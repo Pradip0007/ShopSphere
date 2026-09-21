@@ -51,10 +51,45 @@ using ShopSphere.Api.SignalR;
 using ShopSphere.Api.Features.Orders.OrderBrodcast;
 using ShopSphere.Inventory.Grpc;
 using ShopSphere.Api.Features.Inventory;
+using Microsoft.AspNetCore.RateLimiting;
 using IDatabase = StackExchange.Redis.IDatabase;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+var rateLimiterEnabled =
+    builder.Configuration.GetValue<bool?>("RateLimiter:Enabled")
+    ?? true;
+
+if (rateLimiterEnabled)
+{
+    builder.Services.AddRateLimiter(o =>
+    {
+        o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+        o.AddFixedWindowLimiter("auth", opt =>
+        {
+            opt.Window = TimeSpan.FromMinutes(1);
+            opt.PermitLimit = 10;
+            opt.QueueLimit = 0;
+        });
+
+        o.AddFixedWindowLimiter("newsletter", opt =>
+        {
+            opt.Window = TimeSpan.FromHours(1);
+            opt.PermitLimit = 3;
+            opt.QueueLimit = 0;
+        });
+
+        o.AddTokenBucketLimiter("stripe-webhook", opt =>
+        {
+            opt.TokenLimit = 30;
+            opt.TokensPerPeriod = 30;
+            opt.ReplenishmentPeriod = TimeSpan.FromSeconds(1);
+            opt.QueueLimit = 0;
+        });
+    });
+}
 
 builder.AddServiceDefaults();
 
@@ -366,6 +401,11 @@ await DatabaseStartup.MigrateAndSeedAsync(app.Services);
 app.MapStripeWebhook();
 
 app.MapReviewEndpoints();
+
+if (rateLimiterEnabled)
+{
+    app.UseRateLimiter();
+}
 
 app.UseAuthentication();
 
