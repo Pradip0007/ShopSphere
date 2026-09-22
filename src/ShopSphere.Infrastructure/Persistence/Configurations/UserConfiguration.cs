@@ -23,6 +23,12 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.HasIndex(u => u.Email).IsUnique();
 
+        builder.Property(u => u.DisplayName)
+            .HasMaxLength(60)
+            .IsRequired();
+
+        builder.HasIndex(u => u.DisplayName);
+
         builder.Property(u => u.PasswordHash)
             .IsRequired()
             .HasMaxLength(512);

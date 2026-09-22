@@ -42,7 +42,7 @@ public sealed class ListProductReviewsEndpoint : IEndpoint
                     orderby review.PostedAtUtc descending
                     select new ProductReviewListItem(
                         review.Id.Value,
-                        user.Email,
+                        user.DisplayName,
                         review.Rating,
                         string.Empty,
                         review.Body,

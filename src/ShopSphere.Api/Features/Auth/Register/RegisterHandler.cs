@@ -29,11 +29,13 @@ public sealed class RegisterHandler(
             .FirstOrDefaultAsync(r => r.Name == "customer", cancellationToken)
             ?? throw new InvalidOperationException("Customer role missing — seed not run?");
 
-        User user = User.Register(request.Email, request.Password, hasher);
+        User user = User.Register(request.Email, request.Password, hasher ,request.DisplayName);
         user.AssignRole(customer);
         db.Users.Add(user);
         await db.SaveChangesAsync(cancellationToken);
 
-        return new RegisterResponse(user.Id.Value);
+        return new RegisterResponse(
+        user.Id.Value,
+        user.DisplayName);
     }
 }
