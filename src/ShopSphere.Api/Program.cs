@@ -341,6 +341,7 @@ builder.Services
     {
         o.Address = new Uri("https://inventory-grpc");
     })
+    .AddInterceptor<CorrelationIdGrpcInterceptor>()
     .AddStandardResilienceHandler(o =>
     {
         o.AttemptTimeout.Timeout = TimeSpan.FromSeconds(5);
@@ -425,6 +426,8 @@ if (rateLimiterEnabled)
 }
 
 app.UseCors();
+
+app.UseMiddleware<CorrelationIdMiddleware>();
 
 app.UseAuthentication();
 
