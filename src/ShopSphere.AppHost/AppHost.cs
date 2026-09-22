@@ -4,7 +4,9 @@ var cache = builder.AddRedis("cache")
     .WithDataVolume()
     .WithRedisCommander();
 
-var rabbit = builder.AddRabbitMQ("rabbit")
+var rabbitPassword = builder.AddParameter("rabbit-password", secret: true);
+
+var rabbit = builder.AddRabbitMQ("rabbit", password: rabbitPassword)
     .WithDataVolume()
     .WithManagementPlugin(port: 15672);
 

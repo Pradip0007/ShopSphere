@@ -1,6 +1,10 @@
 using System.Reflection;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Http.Headers;
+using System.Text;
+using Microsoft.Extensions.Options;
+using ShopSphere.Workers.Options;
 using ShopSphere.Infrastructure.Inventory;
 using ShopSphere.Infrastructure.Outbox;
 using ShopSphere.Infrastructure;
@@ -38,12 +42,6 @@ var rabbitConn =
     builder.Configuration.GetConnectionString("rabbit")
     ?? throw new InvalidOperationException(
         "Missing connection string 'rabbit'.");
-
-
-// Temporary local credentials for Day 47 DLQ monitoring.
-// DO NOT COMMIT THESE CREDENTIALS.
-var rabbitUser = "guest";
-var rabbitPassword = "ub13tez7BUpm9p1S41DsMR";
 
 builder.Services.AddMassTransit(x =>
 {
@@ -105,19 +103,22 @@ builder.Services.AddHostedService<OutboxDispatcherJob>();
 // RabbitMQ Dead-Letter Queue monitor
 // ------------------------------------------------------------
 
-builder.Services.AddHttpClient("RabbitManagement", client =>
+builder.Services
+    .AddOptions<RabbitManagementOptions>()
+    .Bind(builder.Configuration.GetSection("RabbitManagement"));
+
+builder.Services.AddHttpClient("RabbitManagement", (sp, http) =>
 {
-    client.BaseAddress =
-        new Uri("http://localhost:15672/");
+    var opts = sp.GetRequiredService<IOptions<RabbitManagementOptions>>().Value;
 
-    var basic = Convert.ToBase64String(
-        System.Text.Encoding.ASCII.GetBytes(
-            $"{rabbitUser}:{rabbitPassword}"));
+    http.BaseAddress = new Uri(opts.BaseUrl);
 
-    client.DefaultRequestHeaders.Authorization =
-        new System.Net.Http.Headers.AuthenticationHeaderValue(
+    var byteArray = Encoding.ASCII.GetBytes($"{opts.User}:{opts.Password}");
+
+    http.DefaultRequestHeaders.Authorization =
+        new AuthenticationHeaderValue(
             "Basic",
-            basic);
+            Convert.ToBase64String(byteArray));
 });
 
 builder.Services.AddHostedService<DeadLetterMonitorJob>();
