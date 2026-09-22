@@ -15,5 +15,9 @@ public sealed class RegisterValidator : AbstractValidator<RegisterCommand>
             .NotEmpty()
             .MinimumLength(12)
             .MaximumLength(128);
+
+        RuleFor(c => c.DisplayName)
+            .MaximumLength(60)
+            .When(c => c.DisplayName is not null);
     }
 }
