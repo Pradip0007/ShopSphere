@@ -134,6 +134,40 @@ public sealed partial class User : AggregateRoot<UserId>
             PasswordHash);
     }
 
+    public void ResetPassword(
+    string newPassword,
+    IPasswordHasher hasher)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(newPassword);
+        ArgumentNullException.ThrowIfNull(hasher);
+
+        if (newPassword.Length < 12)
+        {
+            throw new ArgumentException(
+                "Password must be at least 12 characters.",
+                nameof(newPassword));
+        }
+
+        if (newPassword.Length > 128)
+        {
+            throw new ArgumentException(
+                "Password must be at most 128 characters.",
+                nameof(newPassword));
+        }
+
+        if (!HasUpper(newPassword)
+            || !HasLower(newPassword)
+            || !HasDigit(newPassword))
+        {
+            throw new ArgumentException(
+                "Password must contain upper, lower, and digit characters.",
+                nameof(newPassword));
+        }
+
+        PasswordHash = hasher.Hash(newPassword);
+        IsLockedOut = false;
+    }
+
     public void AssignRole(Role role)
     {
         ArgumentNullException.ThrowIfNull(role);
