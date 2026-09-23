@@ -18,7 +18,7 @@ public sealed class RegisterHandlerTests
         await db.SaveChangesAsync();
 
         var result = await new RegisterHandler(db, new TestPasswordHasher()).Handle(
-            new RegisterCommand(" USER@Example.com ", "StrongPassword1"), CancellationToken.None);
+            new RegisterCommand(" USER@Example.com ", "StrongPassword1","Test User"), CancellationToken.None);
 
         var user = await db.Users.Include(u => u.Roles).SingleAsync();
         result.UserId.Should().Be(user.Id.Value);
@@ -37,8 +37,7 @@ public sealed class RegisterHandlerTests
         await db.SaveChangesAsync();
 
         var act = () => new RegisterHandler(db, new TestPasswordHasher()).Handle(
-            new RegisterCommand(" USER@EXAMPLE.COM ", "StrongPassword1"), CancellationToken.None);
-
+            new RegisterCommand(" USER@EXAMPLE.COM ", "StrongPassword1","Test User"), CancellationToken.None);
         await act.Should().ThrowAsync<ConflictException>().WithMessage("Registration failed.");
     }
 
@@ -48,8 +47,7 @@ public sealed class RegisterHandlerTests
         await using var db = InMemoryDb.New();
 
         var act = () => new RegisterHandler(db, new TestPasswordHasher()).Handle(
-            new RegisterCommand("user@example.com", "StrongPassword1"), CancellationToken.None);
-
+            new RegisterCommand("user@example.com", "StrongPassword1","Test User"), CancellationToken.None);
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*Customer role missing*");
     }
 
