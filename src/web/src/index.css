@@ -1,5 +1,6 @@
 @import "tailwindcss";
-@import "./styles/tokens.css";
+
+@import "./shared/ui/tokens.css";
 
 html,
 body {
@@ -22,4 +23,15 @@ body {
   outline: 2px solid var(--color-brand-500);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
+}
+
+@theme {
+  --color-brand: var(--color-brand);
+  --color-brand-fg: var(--color-brand-fg);
+  --color-ink: var(--color-ink);
+  --color-ink-dim: var(--color-ink-dim);
+  --color-surface: var(--color-surface);
+
+  --font-display: "Inter Display", ui-sans-serif, system-ui;
+  --font-body: "Inter", ui-sans-serif, system-ui;
 }
