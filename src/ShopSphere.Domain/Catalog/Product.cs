@@ -40,6 +40,14 @@ public sealed class Product : AggregateRoot<ProductId>
     public CategoryId CategoryId { get; private set; }
     public Money Price { get; private set; } = default!;
     public ProductStatus Status { get; private set; }
+    private readonly List<ProductImage> _images = [];
+    public IReadOnlyList<ProductImage> Images => _images.AsReadOnly();
+    public void AddImage(ProductImage image)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+
+        _images.Add(image);
+    }
 
     /// <summary>
     /// Factory. New products start in Draft — no publish event yet.

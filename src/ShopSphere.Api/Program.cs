@@ -52,6 +52,7 @@ using ShopSphere.Api.Features.Orders.OrderBrodcast;
 using ShopSphere.Inventory.Grpc;
 using ShopSphere.Api.Features.Inventory;
 using Microsoft.AspNetCore.RateLimiting;
+using ShopSphere.Infrastructure.Storage;
 using IDatabase = StackExchange.Redis.IDatabase;
 
 
@@ -118,6 +119,8 @@ builder.Services
         tags: ["ready"]);
 
 builder.Services.AddInfrastructure();
+builder.Services.AddFileStorage();
+builder.Services.AddAntiforgery();
 
 Assembly apiAssembly = Assembly.GetExecutingAssembly();
 
@@ -432,6 +435,8 @@ app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseAntiforgery();
 
 app.MapHub<NotificationsHub>("/hubs/notifications")
     .RequireAuthorization();

@@ -15,6 +15,7 @@ public sealed class ShopSphereDbContext(DbContextOptions<ShopSphereDbContext> op
 {
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Product> Products => Set<Product>();
+    public DbSet<ProductImage> ProductImages => Set<ProductImage>();
     public DbSet<StockLevel> StockLevels => Set<StockLevel>();
     public DbSet<StockReservation> StockReservations => Set<StockReservation>();
     public DbSet<User> Users => Set<User>();
