@@ -4,12 +4,129 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # ShopSphere Design System
 
-Reusable UI primitives built on Radix + Tailwind v4.
+Reusable UI primitives built with Radix + Tailwind v4.
+
+## Design Tokens
+
+ShopSphere uses centralized design tokens so components do not depend on raw color values.
+
+### Colors
+
+<div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+  <div className="rounded-md border border-ink-dim/20 bg-bg p-4">
+    <div className="mb-2 h-12 rounded-sm border border-ink-dim/20 bg-bg" />
+    <strong>Background</strong>
+    <p className="text-sm text-ink-dim">bg</p>
+  </div>
+
+  <div className="rounded-md border border-ink-dim/20 bg-surface p-4">
+    <div className="mb-2 h-12 rounded-sm bg-surface" />
+    <strong>Surface</strong>
+    <p className="text-sm text-ink-dim">surface</p>
+  </div>
+
+  <div className="rounded-md border border-ink-dim/20 bg-surface-elevated p-4">
+    <div className="mb-2 h-12 rounded-sm border border-ink-dim/20 bg-surface-elevated" />
+    <strong>Surface Elevated</strong>
+    <p className="text-sm text-ink-dim">surface-elevated</p>
+  </div>
+
+  <div className="rounded-md border border-ink-dim/20 bg-brand p-4 text-brand-fg">
+    <div className="mb-2 h-12 rounded-sm bg-brand" />
+    <strong>Brand</strong>
+    <p className="text-sm opacity-80">brand</p>
+  </div>
+
+  <div className="rounded-md border border-ink-dim/20 bg-brand-fg p-4 text-ink">
+    <div className="mb-2 h-12 rounded-sm bg-brand-fg border border-ink-dim/20" />
+    <strong>Brand Foreground</strong>
+    <p className="text-sm text-ink-dim">brand-fg</p>
+  </div>
+
+  <div className="rounded-md border border-ink-dim/20 bg-accent p-4">
+    <div className="mb-2 h-12 rounded-sm bg-accent" />
+    <strong>Accent</strong>
+    <p className="text-sm text-ink-dim">accent</p>
+  </div>
+
+  <div className="rounded-md border border-ink-dim/20 bg-ink p-4 text-bg">
+    <div className="mb-2 h-12 rounded-sm bg-ink" />
+    <strong>Ink</strong>
+    <p className="text-sm opacity-80">ink</p>
+  </div>
+
+  <div className="rounded-md border border-ink-dim/20 bg-ink-dim p-4 text-bg">
+    <div className="mb-2 h-12 rounded-sm bg-ink-dim" />
+    <strong>Ink Dim</strong>
+    <p className="text-sm opacity-80">ink-dim</p>
+  </div>
+
+  <div className="rounded-md border border-ink-dim/20 bg-danger p-4">
+    <div className="mb-2 h-12 rounded-sm bg-danger" />
+    <strong>Danger</strong>
+    <p className="text-sm text-ink-dim">danger</p>
+  </div>
+
+  <div className="rounded-md border border-ink-dim/20 bg-success p-4">
+    <div className="mb-2 h-12 rounded-sm bg-success" />
+    <strong>Success</strong>
+    <p className="text-sm text-ink-dim">success</p>
+  </div>
+</div>
+
+### Radius
+
+<div className="flex flex-wrap gap-4">
+  <div className="rounded-sm border border-ink-dim/20 bg-surface p-4">
+    <strong>Small</strong>
+    <p className="text-sm text-ink-dim">radius-sm</p>
+  </div>
+
+  <div className="rounded-md border border-ink-dim/20 bg-surface p-4">
+    <strong>Medium</strong>
+    <p className="text-sm text-ink-dim">radius-md</p>
+  </div>
+
+  <div className="rounded-lg border border-ink-dim/20 bg-surface p-4">
+    <strong>Large</strong>
+    <p className="text-sm text-ink-dim">radius-lg</p>
+  </div>
+
+  <div className="rounded-xl border border-ink-dim/20 bg-surface p-4">
+    <strong>Extra Large</strong>
+    <p className="text-sm text-ink-dim">radius-xl</p>
+  </div>
+</div>
+
+### Elevation
+
+<div className="grid gap-6 md:grid-cols-3">
+  <div className="rounded-md bg-surface-elevated p-6 shadow-sm">
+    <strong>Small</strong>
+    <p className="text-sm text-ink-dim">shadow-sm</p>
+  </div>
+
+  <div className="rounded-md bg-surface-elevated p-6 shadow-md">
+    <strong>Medium</strong>
+    <p className="text-sm text-ink-dim">shadow-md</p>
+  </div>
+
+  <div className="rounded-md bg-surface-elevated p-6 shadow-lg">
+    <strong>Large</strong>
+    <p className="text-sm text-ink-dim">shadow-lg</p>
+  </div>
+</div>
+
+### Motion
+
+- **Fast** — `duration-fast`
+- **Medium** — `duration-med`
+- **Easing** — `easing-standard`
 
 ## Principles
 
 - **Accessibility first.** Every interactive component ships with keyboard support and ARIA roles from Radix.
-- **Tokens over hex.** All colors, spacing, and typography reference CSS variables defined in `styles/tokens.css`.
+- **Tokens over hex.** All colors, spacing, typography, radius, elevation, and motion reference centralized CSS variables defined in `shared/ui/tokens.css`.
 - **Composition, not configuration.** Small components + `asChild` > monolithic components with 20 props.
 - **Variants as data.** Use `cva` — no ternary spaghetti.
 
