@@ -18,6 +18,13 @@ var sql = builder.AddSqlServer("sql")
     .WithDataVolume()
     .AddDatabase("shopsphere");
 
+var storage = builder.AddAzureStorage("storage")
+    .RunAsEmulator();
+
+var blobs = storage.AddBlobs("blobs");
+
+var productImages = blobs.AddBlobContainer("product-images");
+
 var inventoryGrpc = builder.AddProject<Projects.ShopSphere_Inventory_Grpc>("inventory-grpc")
     .WithReference(sql)
     .WithReference(rabbit)
@@ -28,6 +35,13 @@ var api = builder.AddProject<Projects.ShopSphere_Api>("api")
     .WithReference(sql)
     .WithReference(rabbit)
     .WithReference(inventoryGrpc)
+    .WithReference(productImages)
+    .WithEnvironment(
+        "Storage__ConnectionString",
+        blobs.Resource.ConnectionStringExpression)
+    .WithEnvironment(
+        "Storage__ContainerName",
+        "product-images")
     .WithEnvironment("Email__Host", "localhost")
     .WithEnvironment("Email__Port", "1025")
     .WaitFor(sql);
@@ -36,6 +50,7 @@ builder.AddProject<Projects.ShopSphere_Workers>("workers")
     .WithReference(cache)
     .WithReference(rabbit)
     .WithReference(sql)
+    .WithReference(productImages)
     .WaitFor(sql);
 
 builder.Build().Run();
