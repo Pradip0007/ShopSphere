@@ -3,6 +3,7 @@ export type OrderStatus =
   | 'Placed'
   | 'InventoryReserved'
   | 'PaymentAuthorized'
+  | 'PaymentFailed'
   | 'Confirmed'
   | 'Paid'
   | 'Shipped'

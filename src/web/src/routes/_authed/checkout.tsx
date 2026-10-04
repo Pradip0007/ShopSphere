@@ -116,7 +116,13 @@ function CheckoutPage(): React.JSX.Element {
   async function onSubmit(values: CheckoutValues): Promise<void> {
     setSubmitError(null);
 
+    if (!paymentMethodId) {
+      setSubmitError('Enter card details first');
+      return;
+    }
+
     submitMutation.mutate({
+      paymentMethodId,
       shippingAddress: {
         line1: values.shipping.line1,
         ...(values.shipping.line2 !== undefined && values.shipping.line2 !== ''

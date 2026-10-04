@@ -32,7 +32,11 @@ public sealed class Order : AggregateRoot<OrderId>
     /// Snapshots every line at current price. NEVER trust the cart at this point —
     /// the caller passes fully-hydrated OrderItem instances built from a live catalog read.
     /// </summary>
-    public static Order Place(Guid userId, IReadOnlyList<OrderItem> lines, Address shippingAddress)
+    public static Order Place(
+        Guid userId,
+        IReadOnlyList<OrderItem> lines,
+        Address shippingAddress,
+        string? paymentMethodId = null)
     {
         ArgumentOutOfRangeException.ThrowIfEqual(userId, Guid.Empty);
         ArgumentNullException.ThrowIfNull(lines);
@@ -57,6 +61,7 @@ public sealed class Order : AggregateRoot<OrderId>
 
         order.Raise(new OrderPlacedEvent(
             order,
+            paymentMethodId,
             order.PlacedAtUtc));
 
         return order;

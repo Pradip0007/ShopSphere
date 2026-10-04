@@ -89,7 +89,7 @@ public sealed class GetOrderEndpoint : IEndpoint
         status switch
         {
             OrderStatus.Pending => "Pending",
-            OrderStatus.InventoryReserved => "Pending",
+            OrderStatus.InventoryReserved => "InventoryReserved",
             OrderStatus.PaymentAuthorized => "Paid",
             OrderStatus.PaymentFailed => "PaymentFailed",
             OrderStatus.Confirmed => "Confirmed",

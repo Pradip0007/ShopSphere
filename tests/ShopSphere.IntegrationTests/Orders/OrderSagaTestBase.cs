@@ -58,7 +58,8 @@ public abstract class OrderSagaTestBase(
                     null,
                     "Test City",
                     "12345",
-                    "US")));
+                    "US"),
+                "pm_card_visa"));
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         var body = await response.Content.ReadFromJsonAsync<CheckoutResponse>();
         body.Should().NotBeNull();

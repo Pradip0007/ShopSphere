@@ -13,7 +13,7 @@ public static class CheckoutFeature
 {
     public sealed record AddressDto(string Line1, string? Line2, string City, string PostalCode, string Country);
 
-    public sealed record Request(AddressDto ShippingAddress);
+    public sealed record Request(AddressDto ShippingAddress, string PaymentMethodId);
 
     public sealed record Response(Guid OrderId, decimal Total, string Currency, int LineCount);
 
@@ -32,6 +32,11 @@ public static class CheckoutFeature
         if (!Guid.TryParse(userIdClaim, out var userId))
         {
             return Results.Unauthorized();
+        }
+
+        if (string.IsNullOrWhiteSpace(request.PaymentMethodId))
+        {
+            return Results.BadRequest(new { error = "A payment method is required." });
         }
 
         var idempotencyKey = http.Request.Headers["Idempotency-Key"].FirstOrDefault();
@@ -85,7 +90,7 @@ public static class CheckoutFeature
             request.ShippingAddress.PostalCode,
             request.ShippingAddress.Country);
 
-        var order = Order.Place(userId, lines, address);
+        var order = Order.Place(userId, lines, address, request.PaymentMethodId);
 
         await orders.AddAsync(order, ct);
         await orders.SaveChangesAsync(ct);

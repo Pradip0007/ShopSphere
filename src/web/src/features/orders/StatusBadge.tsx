@@ -11,6 +11,7 @@ const badge = cva(
         Placed: 'bg-[oklch(0.94_0.08_250)] text-[oklch(0.32_0.15_250)]',
         InventoryReserved: 'bg-[oklch(0.92_0.10_145)] text-[oklch(0.32_0.15_145)]',
         PaymentAuthorized: 'bg-[oklch(0.92_0.10_180)] text-[oklch(0.30_0.15_180)]',
+        PaymentFailed: 'bg-[oklch(0.90_0.10_25)] text-[oklch(0.35_0.18_25)]',
         Confirmed: 'bg-[oklch(0.90_0.10_145)] text-[oklch(0.35_0.15_145)]',
         Paid: 'bg-[oklch(0.90_0.10_180)] text-[oklch(0.30_0.15_180)]',
         Shipped: 'bg-[oklch(0.92_0.09_250)] text-[oklch(0.32_0.17_250)]',
@@ -59,6 +60,8 @@ function statusDotColor(status: OrderStatus): string {
       return 'oklch(0.55 0.18 145)';
     case 'PaymentAuthorized':
       return 'oklch(0.55 0.18 180)';
+    case 'PaymentFailed':
+      return 'oklch(0.55 0.20 25)';
     case 'Confirmed':
       return 'oklch(0.55 0.18 145)';
     case 'Paid':

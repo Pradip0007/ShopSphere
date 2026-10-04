@@ -2,4 +2,5 @@ namespace ShopSphere.Contracts.Events;
 
 public sealed record InventoryReserved(
     Guid OrderId,
-    DateTimeOffset ReservedAtUtc);
+    DateTimeOffset ReservedAtUtc,
+    string? PaymentMethodId = null);

@@ -1,7 +1,8 @@
 namespace ShopSphere.IntegrationTests.Orders;
 
 public sealed record CheckoutRequest(
-    ShippingAddressRequest ShippingAddress);
+    ShippingAddressRequest ShippingAddress,
+    string PaymentMethodId);
 
 public sealed record ShippingAddressRequest(
     string Line1,

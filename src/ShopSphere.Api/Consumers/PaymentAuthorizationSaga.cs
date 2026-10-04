@@ -46,9 +46,19 @@ public sealed class PaymentAuthorizationSaga : IConsumer<InventoryReserved>
             return;
         }
 
-        // For demo purposes the payment method comes from a test fixture — Day 41
-        // hooks the real customer-provided payment method id from the checkout DTO.
-        const string TestPaymentMethod = "pm_card_visa";
+        var paymentMethodId = context.Message.PaymentMethodId;
+        if (string.IsNullOrWhiteSpace(paymentMethodId))
+        {
+            _logger.LogWarning(
+                "Payment method missing for orderId={OrderId}",
+                order.Id.Value);
+
+            await context.Publish(new PaymentFailed(
+                order.Id.Value,
+                "Payment method is missing.",
+                DateTimeOffset.UtcNow), context.CancellationToken);
+            return;
+        }
 
        var metadata = new Dictionary<string, string>
         {
@@ -57,7 +67,7 @@ public sealed class PaymentAuthorizationSaga : IConsumer<InventoryReserved>
 
         var result = await _gateway.AuthorizeAsync(
             order.Subtotal,
-            TestPaymentMethod,
+            paymentMethodId,
             idempotencyKey: $"authorize:{order.Id.Value:D}",
             metadata,
             context.CancellationToken);
