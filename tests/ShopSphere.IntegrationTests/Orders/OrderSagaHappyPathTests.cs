@@ -18,6 +18,7 @@ public sealed class OrderSagaHappyPathTests(ContainerFixture containers)
         final.TotalAmount.Should().Be(19.98m);
         final.Currency.Should().Be("USD");
         Factory.Payment.AuthorizeCallCount.Should().Be(1);
+        Factory.Payment.PaymentMethodIds.Should().ContainSingle().Which.Should().Be("pm_card_visa");
         Factory.Payment.IdempotencyKeys.Should()
             .ContainSingle(key => key == $"authorize:{placed.OrderId:D}");
 

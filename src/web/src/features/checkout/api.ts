@@ -1,6 +1,7 @@
 import { apiFetch } from '@/shared/lib/api-fetch';
 
 export interface CheckoutRequest {
+  paymentMethodId: string;
   shippingAddress: {
     line1: string;
     line2?: string;

@@ -46,6 +46,7 @@ public sealed class FakePaymentGateway(bool succeeds) : IPaymentGateway
 {
     public int AuthorizeCallCount { get; private set; }
     public List<string> IdempotencyKeys { get; } = [];
+    public List<string> PaymentMethodIds { get; } = [];
 
     public Task<AuthorizationResult> AuthorizeAsync(
         Money amount,
@@ -56,6 +57,7 @@ public sealed class FakePaymentGateway(bool succeeds) : IPaymentGateway
     {
         AuthorizeCallCount++;
         IdempotencyKeys.Add(idempotencyKey);
+        PaymentMethodIds.Add(paymentMethodId);
         return Task.FromResult(
             succeeds
                 ? new AuthorizationResult(true, $"pi-test-{AuthorizeCallCount}", null)

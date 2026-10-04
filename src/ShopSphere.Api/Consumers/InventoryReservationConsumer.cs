@@ -141,7 +141,8 @@ public sealed class InventoryReservationConsumer(
         await context.Publish(
             new InventoryReserved(
                 msg.OrderId,
-                DateTimeOffset.UtcNow),
+                DateTimeOffset.UtcNow,
+                msg.PaymentMethodId),
             context.CancellationToken);
     }
 }

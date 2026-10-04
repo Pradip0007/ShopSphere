@@ -26,6 +26,7 @@ public sealed class OrderPlacedMapper
             Total: order.Subtotal.Amount,
             Currency: order.Subtotal.Currency,
             PlacedAtUtc: order.PlacedAtUtc,
-            Lines: lines);
+            Lines: lines,
+            PaymentMethodId: domainEvent.PaymentMethodId);
     }
 }

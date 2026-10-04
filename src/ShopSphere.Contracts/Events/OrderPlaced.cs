@@ -11,7 +11,8 @@ public sealed record OrderPlaced(
     decimal Total,
     string Currency,
     DateTimeOffset PlacedAtUtc,
-    IReadOnlyList<OrderPlacedLine> Lines);
+    IReadOnlyList<OrderPlacedLine> Lines,
+    string? PaymentMethodId = null);
 
 public sealed record OrderPlacedLine(
     Guid ProductId,

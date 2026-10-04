@@ -330,6 +330,7 @@ builder.Services.AddSingleton<
     IntegrationEventMapperResolver>();
 
 builder.Services.AddSingleton<IOrderStatusBroadcaster, OrderStatusBroadcaster>();
+builder.Services.AddTransient<CorrelationIdGrpcInterceptor>();
 
 builder.Services.AddSignalR(o =>
 {

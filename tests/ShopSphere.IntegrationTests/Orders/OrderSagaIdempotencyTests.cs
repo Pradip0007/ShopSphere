@@ -23,7 +23,8 @@ public sealed class OrderSagaIdempotencyTests(ContainerFixture containers)
         cartResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var request = new CheckoutRequest(
-        new ShippingAddressRequest("1 Main Street", null, "Test City", "12345", "US"));
+            new ShippingAddressRequest("1 Main Street", null, "Test City", "12345", "US"),
+            "pm_card_visa");
         var first = await client.PostAsJsonAsync("/api/v1/checkout", request);
         var second = await client.PostAsJsonAsync("/api/v1/checkout", request);
 
