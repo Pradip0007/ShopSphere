@@ -267,7 +267,6 @@ builder.Services.AddOpenApi(
 
 builder.Services.AddScoped<IOrderRepository, EfOrderRepository>();
 builder.Services.AddSingleton<IProcessedWebhookStore, InMemoryProcessedWebhookStore>();
-builder.Services.AddHttpContextAccessor();
 builder.Services
     .AddOptions<StripeOptions>()
     .Bind(builder.Configuration.GetSection(StripeOptions.SectionName))
