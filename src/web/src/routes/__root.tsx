@@ -69,20 +69,18 @@ function RootLayout(): React.JSX.Element {
             Products
           </Link>
 
-          {user && (
-            <CartDrawer
-              trigger={
-                <button
-                  type="button"
-                  data-testid="cart-drawer-trigger"
-                  aria-label="Open shopping cart"
-                  className="rounded px-2 py-1 hover:text-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
-                >
-                  <CartBadge />
-                </button>
-              }
-            />
-          )}
+          <CartDrawer
+            trigger={
+              <button
+                type="button"
+                data-testid="cart-drawer-trigger"
+                aria-label="Open shopping cart"
+                className="rounded px-2 py-1 hover:text-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+              >
+                <CartBadge />
+              </button>
+            }
+          />
 
           {user && (
             <Link to="/orders" data-testid="nav-orders" className="hover:text-brand-600">

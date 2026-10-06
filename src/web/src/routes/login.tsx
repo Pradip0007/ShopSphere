@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -6,6 +7,7 @@ import { z } from 'zod';
 import { login } from '@/features/auth/api';
 import { applyServerErrors } from '@/features/auth/apply-server-errors';
 import { type LoginFormValues, loginSchema } from '@/features/auth/schemas';
+import { CART_QUERY_KEY } from '@/features/cart/queries';
 import { getUserFromAccessToken } from '@/shared/lib/jwt';
 import { Button } from '@/shared/ui/Button';
 import { FormField } from '@/shared/ui/FormField';
@@ -24,6 +26,7 @@ export const Route = createFileRoute('/login')({
 function LoginPage(): React.JSX.Element {
   const { redirect } = Route.useSearch();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const dispatch = useAppDispatch();
 
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -56,6 +59,8 @@ function LoginPage(): React.JSX.Element {
           user,
         }),
       );
+
+      await queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
 
       await navigate({
         to: redirect ?? '/',
