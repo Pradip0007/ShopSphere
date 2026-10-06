@@ -7,7 +7,7 @@ public static class CartEndpoints
         var group = routes.MapGroup("/api/v1/cart")
             .WithTags("Cart")
             .WithOpenApi()
-            .RequireAuthorization();
+            .AllowAnonymous();
 
         group.MapGet("/", GetCart.HandleAsync);
         group.MapPost("/items", AddItem.HandleAsync);
