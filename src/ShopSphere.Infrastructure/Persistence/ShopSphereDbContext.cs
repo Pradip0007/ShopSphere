@@ -5,6 +5,7 @@ using ShopSphere.Domain.Users;
 using ShopSphere.Domain.Ordering;
 using ShopSphere.Domain.Reviews;
 using ShopSphere.Domain.Newsletter;
+using ShopSphere.Domain.Wishlist;
 using ShopSphere.Infrastructure.Audit;
 using ShopSphere.Infrastructure.Outbox;
 
@@ -25,6 +26,7 @@ public sealed class ShopSphereDbContext(DbContextOptions<ShopSphereDbContext> op
     public DbSet<Permission> Permissions => Set<Permission>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<Wishlist> Wishlists => Set<Wishlist>();
     public DbSet<Review> Reviews => Set<Review>();
     public DbSet<NewsletterSubscription> NewsletterSubscriptions => Set<NewsletterSubscription>();
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();

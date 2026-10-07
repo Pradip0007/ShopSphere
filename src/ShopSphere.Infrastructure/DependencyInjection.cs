@@ -8,6 +8,7 @@ using ShopSphere.Infrastructure.Outbox;
 using ShopSphere.Domain.Users;
 using ShopSphere.Infrastructure.Security;
 using ShopSphere.Domain.Catalog;
+using ShopSphere.Domain.Wishlist;
 
 namespace ShopSphere.Infrastructure;
 
@@ -42,6 +43,7 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IWishlistRepository, WishlistRepository>();
 
         services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
 
