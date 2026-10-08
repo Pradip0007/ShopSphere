@@ -1,10 +1,12 @@
+using ShopSphere.Api.Infrastructure;
+
 namespace ShopSphere.Api.Features.Cart;
 
-public static class CartEndpoints
+public sealed class CartEndpoints : IEndpoint
 {
-    public static IEndpointRouteBuilder MapCartEndpoints(this IEndpointRouteBuilder routes)
+    public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        var group = routes.MapGroup("/api/v1/cart")
+        var group = app.MapGroup("/cart")
             .WithTags("Cart")
             .WithOpenApi()
             .AllowAnonymous();
@@ -13,7 +15,5 @@ public static class CartEndpoints
         group.MapPost("/items", AddItem.HandleAsync);
         group.MapPatch("/items/{productId:guid}", UpdateItem.HandleAsync);
         group.MapDelete("/items/{productId:guid}", RemoveItem.HandleAsync);
-
-        return routes;
     }
 }

@@ -1,19 +1,17 @@
-using ShopSphere.Api.Features.Checkout;
+using ShopSphere.Api.Infrastructure;
 
 namespace ShopSphere.Api.Features.Checkout;
 
-public static class CheckoutEndpoints
+public sealed class CheckoutEndpoints : IEndpoint
 {
-    public static IEndpointRouteBuilder MapCheckoutEndpoints(this IEndpointRouteBuilder routes)
+    public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        var group = routes.MapGroup("/api/v1/checkout")
+        var group = app.MapGroup("/checkout")
             .WithTags("Checkout")
             .WithOpenApi()
             .RequireAuthorization();
 
         group.MapGet("/review", CheckoutReview.HandleAsync);
         group.MapPost("/", CheckoutFeature.HandleAsync);
-
-        return routes;
     }
 }

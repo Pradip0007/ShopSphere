@@ -1,15 +1,17 @@
+using ShopSphere.Api.Infrastructure;
+
 namespace ShopSphere.Api.Features.Reviews;
 
-public static class ReviewEndpoints
+public sealed class ReviewEndpoints : IEndpoint
 {
-    public static IEndpointRouteBuilder MapReviewEndpoints(this IEndpointRouteBuilder routes)
+    public void MapEndpoint(IEndpointRouteBuilder app)
     {
         // Public: list approved reviews for a product.
-        routes.MapGet("/api/v1/products/{productId:guid}/reviews", ListApproved.HandleAsync)
+        app.MapGet("/products/{productId:guid}/reviews", ListApproved.HandleAsync)
             .WithTags("Reviews");
 
         // Authenticated user: post a review.
-        routes.MapPost("/api/v1/products/{productId:guid}/reviews",
+        app.MapPost("/products/{productId:guid}/reviews",
                 async (Guid productId, PostReview.Request body, HttpContext http,
                        Domain.Reviews.IReviewRepository reviews, CancellationToken ct) =>
                     await PostReview.HandleAsync(
@@ -18,13 +20,11 @@ public static class ReviewEndpoints
             .RequireAuthorization();
 
         // Admin: approve / reject.
-        var admin = routes.MapGroup("/api/v1/admin/reviews")
+        var admin = app.MapGroup("/admin/reviews")
             .WithTags("Admin Reviews")
             .RequireAuthorization("admin");
 
         admin.MapPost("/{reviewId:guid}/approve", ShopSphere.Api.Features.Admin.ApproveReview.HandleAsync);
         admin.MapPost("/{reviewId:guid}/reject", ShopSphere.Api.Features.Admin.RejectReview.HandleAsync);
-
-        return routes;
     }
 }
