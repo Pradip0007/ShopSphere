@@ -82,6 +82,13 @@ if (rateLimiterEnabled)
             opt.QueueLimit = 0;
         });
 
+        o.AddFixedWindowLimiter("wishlist", opt =>
+        {
+            opt.Window = TimeSpan.FromMinutes(1);
+            opt.PermitLimit = 10;
+            opt.QueueLimit = 0;
+        });
+
         o.AddTokenBucketLimiter("stripe-webhook", opt =>
         {
             opt.TokenLimit = 30;

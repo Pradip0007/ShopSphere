@@ -18,12 +18,18 @@ public sealed class WishlistRepository(
     }
 
     public async Task AddItemAsync(
-        Wishlist wishlist,
-        ProductId productId,
-        TimeProvider clock,
-        CancellationToken ct = default)
+    Wishlist wishlist,
+    ProductId productId,
+    TimeProvider clock,
+    CancellationToken ct = default)
     {
+        if (db.Entry(wishlist).State == EntityState.Detached)
+        {
+            db.Wishlists.Add(wishlist);
+        }
+
         wishlist.Add(productId, clock);
+
         await db.SaveChangesAsync(ct);
     }
 
