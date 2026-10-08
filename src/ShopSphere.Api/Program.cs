@@ -428,8 +428,6 @@ await DatabaseStartup.MigrateAndSeedAsync(app.Services);
 
 app.MapStripeWebhook();
 
-app.MapReviewEndpoints();
-
 if (rateLimiterEnabled)
 {
     app.UseRateLimiter();
@@ -447,10 +445,6 @@ app.UseAntiforgery();
 
 app.MapHub<NotificationsHub>("/hubs/notifications")
     .RequireAuthorization();
-
-app.MapCartEndpoints();
-
-app.MapCheckoutEndpoints();
 
 app.MapEndpoints(versionedGroup);
 
