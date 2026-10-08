@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { useAddToCart } from '@/features/cart/queries';
+import { WishlistToggle } from '@/features/wishlist/WishlistToggle';
 import { Button, Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui';
 import { ProductGallery } from './ProductGallery';
 import { ProductReviews } from './ProductReviews';
@@ -53,6 +54,9 @@ export function ProductDetail({ slug }: ProductDetailProps): React.JSX.Element {
             >
               {stock <= 0 ? 'Out of stock' : addToCart.isPending ? 'Adding…' : 'Add to cart'}
             </Button>
+
+            <WishlistToggle productId={product.id} />
+
             {stock > 0 && stock < 5 && (
               <span className="text-sm text-[var(--color-warning)]">Only {stock} left</span>
             )}

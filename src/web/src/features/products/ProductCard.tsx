@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { useAddToCart } from '@/features/cart/queries';
+import { WishlistToggle } from '@/features/wishlist/WishlistToggle';
 import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui';
 import { productDetailQueryOptions } from './queries';
@@ -47,6 +48,7 @@ export function ProductCard({ product, className }: ProductCardProps): React.JSX
           <p className="text-base font-semibold">{formatPrice(product.price, product.currency)}</p>
         </div>
       </Link>
+      <WishlistToggle productId={product.id} />
 
       <Button
         variant="primary"
