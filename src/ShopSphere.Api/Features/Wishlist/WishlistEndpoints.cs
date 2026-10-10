@@ -45,53 +45,81 @@ public sealed class WishlistEndpoints : IEndpoint
             .Produces<WishlistResponse>();
 
         group.MapPost("/items", async (
-                WishlistItemCommand command,
-                ClaimsPrincipal user,
-                ISender sender,
-                CancellationToken ct) =>
-            {
-                UserId? userId = GetUserId(user);
+        WishlistItemCommand command,
+        ClaimsPrincipal user,
+        GuestWishlistStore guestWishlist,
+        ISender sender,
+        HttpContext http,
+        CancellationToken ct) =>
+        {
+            UserId? userId = GetUserId(user);
 
-                if (userId is null)
+            if (userId is null)
+            {
+                Guid? sessionId = WishlistSessionResolver.From(http);
+
+                if (sessionId is null)
                     return Results.Unauthorized();
 
-                WishlistItemCommand request = command with
-                {
-                    UserId = userId.Value,
-                    Action = WishlistItemAction.Add
-                };
-
-                await sender.Send(request, ct);
+                await guestWishlist.AddAsync(
+                    sessionId.Value,
+                    command.ProductId);
 
                 return Results.NoContent();
-            })
-            .WithName("AddWishlistItem")
-            .WithSummary("Add a product to the current user's wishlist")
-            .Produces(StatusCodes.Status204NoContent);
+            }
+
+            WishlistItemCommand request = command with
+            {
+                UserId = userId.Value,
+                Action = WishlistItemAction.Add
+            };
+
+            await sender.Send(request, ct);
+
+            return Results.NoContent();
+        })
+        .WithName("AddWishlistItem")
+        .WithSummary("Add a product to the current user's wishlist")
+        .Produces(StatusCodes.Status204NoContent)
+        .AllowAnonymous();
 
         group.MapDelete("/items/{productId:guid}", async (
-                Guid productId,
-                ClaimsPrincipal user,
-                ISender sender,
-                CancellationToken ct) =>
-            {
-                UserId? userId = GetUserId(user);
+        Guid productId,
+        ClaimsPrincipal user,
+        GuestWishlistStore guestWishlist,
+        ISender sender,
+        HttpContext http,
+        CancellationToken ct) =>
+        {
+            UserId? userId = GetUserId(user);
 
-                if (userId is null)
+            if (userId is null)
+            {
+                Guid? sessionId = WishlistSessionResolver.From(http);
+
+                if (sessionId is null)
                     return Results.Unauthorized();
 
-                await sender.Send(
-                    new WishlistItemCommand(
-                        userId.Value,
-                        productId,
-                        WishlistItemAction.Remove),
-                    ct);
+                await guestWishlist.RemoveAsync(
+                    sessionId.Value,
+                    productId);
 
                 return Results.NoContent();
-            })
-            .WithName("RemoveWishlistItem")
-            .WithSummary("Remove a product from the current user's wishlist")
-            .Produces(StatusCodes.Status204NoContent);
+            }
+
+            await sender.Send(
+                new WishlistItemCommand(
+                    userId.Value,
+                    productId,
+                    WishlistItemAction.Remove),
+                ct);
+
+            return Results.NoContent();
+        })
+        .WithName("RemoveWishlistItem")
+        .WithSummary("Remove a product from the current user's wishlist")
+        .Produces(StatusCodes.Status204NoContent)
+        .AllowAnonymous();
     }
 
     private static UserId? GetUserId(ClaimsPrincipal user)

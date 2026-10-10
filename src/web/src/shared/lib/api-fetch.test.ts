@@ -1,7 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { router } from '@/router';
 import { store } from '@/store';
 import { logout, setCredentials } from '@/store/auth.slice';
 import { apiFetch } from './api-fetch';
+
+vi.mock('@/router', () => ({
+  router: {
+    navigate: vi.fn(),
+  },
+}));
 
 function createJwt(payload: Record<string, unknown>): string {
   const encode = (value: string): string =>
@@ -22,7 +29,48 @@ function createJwt(payload: Record<string, unknown>): string {
 describe('apiFetch auth refresh interceptor', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    vi.mocked(router.navigate).mockClear();
     store.dispatch(logout());
+  });
+
+  it('does not redirect guests to login when a public API call returns 401', async () => {
+    const fetchMock = vi.fn(async () => new Response('', { status: 401 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(apiFetch('/api/v1/products')).rejects.toMatchObject({
+      status: 401,
+    });
+
+    expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  it('redirects authenticated users to login when refresh fails', async () => {
+    const token = createJwt({
+      sub: 'user-3',
+      email: 'user3@example.com',
+      role: 'User',
+    });
+    const fetchMock = vi.fn(async () => new Response('', { status: 401 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    store.dispatch(
+      setCredentials({
+        accessToken: token,
+        refreshToken: 'expired-refresh',
+        user: {
+          id: 'user-3',
+          email: 'user3@example.com',
+          roles: ['User'],
+          permissions: [],
+        },
+      }),
+    );
+
+    await expect(apiFetch('/api/v1/orders')).rejects.toMatchObject({
+      status: 401,
+    });
+
+    expect(router.navigate).toHaveBeenCalledOnce();
   });
 
   it('refreshes once and retries the original request after a 401', async () => {

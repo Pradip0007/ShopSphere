@@ -43,9 +43,14 @@ public sealed class WishlistRepository(
     }
 
     public async Task SaveAsync(
-        Wishlist wishlist,
-        CancellationToken ct = default)
+    Wishlist wishlist,
+    CancellationToken ct = default)
     {
+        if (db.Entry(wishlist).State == EntityState.Detached)
+        {
+            db.Wishlists.Add(wishlist);
+        }
+
         await db.SaveChangesAsync(ct);
     }
 }

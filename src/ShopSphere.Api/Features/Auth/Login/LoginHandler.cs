@@ -6,6 +6,10 @@ using ShopSphere.Infrastructure.Persistence;
 using ShopSphere.Infrastructure.Security;
 using ShopSphere.Domain.Cart;
 using ShopSphere.Api.Features.Cart;
+using ShopSphere.Api.Features.Wishlist;
+using ShopSphere.Domain.Catalog;
+using ShopSphere.Domain.Wishlist;
+using DomainWishlist = ShopSphere.Domain.Wishlist.Wishlist;
 
 namespace ShopSphere.Api.Features.Auth.Login;
 
@@ -15,7 +19,9 @@ public sealed class LoginHandler(
     ITokenService tokens,
     TimeProvider timeProvider,
     ICartRepository carts,
-    IHttpContextAccessor httpContextAccessor)
+    IHttpContextAccessor httpContextAccessor,
+    GuestWishlistStore guestWishlist,
+    IWishlistRepository wishlists)
     : IRequestHandler<LoginCommand, LoginResponse>
 {
     private static readonly Lazy<string> _dummyHash = new(() =>
@@ -62,6 +68,14 @@ public sealed class LoginHandler(
                 user.Id.Value,
                 carts,
                 cancellationToken);
+
+            await TryMergeGuestWishlistAsync(
+            http,
+            user.Id,
+            guestWishlist,
+            wishlists,
+            timeProvider,
+            cancellationToken);
         }
 
         IssuedToken access = tokens.IssueAccessToken(user);
@@ -117,5 +131,64 @@ public sealed class LoginHandler(
             });
 
         return true;
+    }
+
+    private static async Task TryMergeGuestWishlistAsync(
+    HttpContext http,
+    UserId userId,
+    GuestWishlistStore guestWishlist,
+    IWishlistRepository wishlists,
+    TimeProvider clock,
+    CancellationToken ct)
+    {
+        if (!http.Request.Cookies.TryGetValue(
+                WishlistSessionResolver.SessionCookieName,
+                out var raw)
+            || !Guid.TryParse(raw, out var sessionGuid))
+        {
+            return;
+        }
+
+        IReadOnlyList<Guid> productIds =
+            await guestWishlist.DrainAsync(sessionGuid);
+
+        if (productIds.Count == 0)
+        {
+            http.Response.Cookies.Delete(
+                WishlistSessionResolver.SessionCookieName,
+                new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Lax,
+                    Path = "/"
+                });
+
+            return;
+        }
+
+        DomainWishlist? wishlist =
+            await wishlists.GetAsync(userId, ct);
+
+        wishlist ??= DomainWishlist.For(userId);
+
+        foreach (Guid productId in productIds)
+        {
+            wishlist.Add(
+                new ProductId(productId),
+                clock);
+        }
+
+        await wishlists.SaveAsync(wishlist, ct);
+
+        http.Response.Cookies.Delete(
+            WishlistSessionResolver.SessionCookieName,
+            new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Lax,
+                Path = "/"
+            });
     }
 }

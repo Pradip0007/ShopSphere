@@ -21,6 +21,24 @@ test('new user starts with an empty cart', async ({ authenticatedPage, cart }) =
   await expect(cart.lines()).toHaveCount(0);
 });
 
+test('guest can browse products and open the cart without login', async ({ page }) => {
+  await page.route('**/api/**', (route) => route.fulfill({ status: 401 }));
+
+  await page.goto('/products');
+
+  await expect(page).toHaveURL(/\/products$/);
+  await expect(page.getByRole('heading', { name: 'Products' })).toBeVisible();
+
+  await page.goto('/cart');
+
+  await expect(page).toHaveURL(/\/cart$/);
+  await expect(page.getByRole('heading', { name: 'Your cart' })).toBeVisible();
+
+  await page.goto('/checkout');
+
+  await expect(page).toHaveURL(/\/login\?redirect=%2Fcheckout/);
+});
+
 test('guest cart is preserved when checkout requires sign in', async ({
   page,
   request,

@@ -53,6 +53,7 @@ using ShopSphere.Inventory.Grpc;
 using ShopSphere.Api.Features.Inventory;
 using Microsoft.AspNetCore.RateLimiting;
 using ShopSphere.Infrastructure.Storage;
+using ShopSphere.Api.Features.Wishlist;
 using IDatabase = StackExchange.Redis.IDatabase;
 
 
@@ -113,6 +114,7 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p => p
     .WithExposedHeaders("Idempotency-Key", "X-Correlation-Id")));
 
 builder.Services.AddShopSphereRedis(builder.Configuration);
+builder.Services.AddScoped<GuestWishlistStore>();
 builder.Services.AddShopSphereCart();
 builder.Services.AddShopSphereMessaging(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
