@@ -4,7 +4,7 @@ import { CartLineRow } from '@/features/cart/CartLineRow';
 import { cartQueryOptions } from '@/features/cart/queries';
 import { Button } from '@/shared/ui';
 
-export const Route = createFileRoute('/_authed/cart')({
+export const Route = createFileRoute('/cart')({
   component: CartPage,
 });
 

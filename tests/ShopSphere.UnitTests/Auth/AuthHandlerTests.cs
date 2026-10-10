@@ -8,10 +8,13 @@ using ShopSphere.Api.Auth;
 using ShopSphere.Api.Features.Auth.Login;
 using ShopSphere.Api.Features.Auth.Refresh;
 using ShopSphere.Api.Features.Cart;
+using ShopSphere.Api.Features.Wishlist;
 using ShopSphere.Domain.Cart;
 using ShopSphere.Domain.Users;
+using ShopSphere.Domain.Wishlist;
 using ShopSphere.Infrastructure.Persistence;
 using ShopSphere.UnitTests.Common;
+using StackExchange.Redis;
 
 namespace ShopSphere.UnitTests.Auth;
 
@@ -89,7 +92,9 @@ public sealed class AuthHandlerTests
             new TestTokenService(time.GetUtcNow()),
             time,
             carts.Object,
-            new HttpContextAccessor { HttpContext = http });
+            new HttpContextAccessor { HttpContext = http },
+            new GuestWishlistStore(Mock.Of<IConnectionMultiplexer>()),
+            Mock.Of<IWishlistRepository>());
 
         await handler.Handle(new LoginCommand("user@example.com", "StrongPassword1"), CancellationToken.None);
 
@@ -202,7 +207,9 @@ public sealed class AuthHandlerTests
             tokens,
             time,
             carts.Object,
-            new HttpContextAccessor());
+            new HttpContextAccessor(),
+            new GuestWishlistStore(Mock.Of<IConnectionMultiplexer>()),
+            Mock.Of<IWishlistRepository>());
     }
 
     private static string Hash(string value) => Convert.ToBase64String(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(value)));

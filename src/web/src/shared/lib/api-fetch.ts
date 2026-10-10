@@ -14,7 +14,7 @@ export interface ApiFetchInit extends Omit<RequestInit, 'body'> {
 
 let refreshInFlight: Promise<boolean> | null = null;
 
-async function performRefresh(): Promise<boolean> {
+async function performRefresh(redirectOnFailure: boolean): Promise<boolean> {
   const [{ store }, { setCredentials, logout }, { refresh }, { getUserFromAccessToken }] =
     await Promise.all([
       import('@/store'),
@@ -40,21 +40,23 @@ async function performRefresh(): Promise<boolean> {
   } catch {
     store.dispatch(logout());
 
-    const { router } = await import('@/router');
+    if (redirectOnFailure) {
+      const { router } = await import('@/router');
 
-    void router.navigate({
-      to: '/login',
-      search: {
-        redirect: window.location.pathname,
-      },
-    });
+      void router.navigate({
+        to: '/login',
+        search: {
+          redirect: window.location.pathname,
+        },
+      });
+    }
 
     return false;
   }
 }
 
-function ensureRefresh(): Promise<boolean> {
-  refreshInFlight ??= performRefresh().finally(() => {
+function ensureRefresh(redirectOnFailure: boolean): Promise<boolean> {
+  refreshInFlight ??= performRefresh(redirectOnFailure).finally(() => {
     refreshInFlight = null;
   });
 
@@ -71,6 +73,7 @@ export async function apiFetch<T>(path: string, init: ApiFetchInit = {}): Promis
   const { json, noCredentials, headers, skipAuth, _isRetry, ...rest } = init;
 
   const requestHeaders = new Headers(headers);
+  const token = skipAuth ? null : await currentAccessToken();
 
   let body: BodyInit | null = null;
 
@@ -84,8 +87,6 @@ export async function apiFetch<T>(path: string, init: ApiFetchInit = {}): Promis
   }
 
   if (!skipAuth) {
-    const token = await currentAccessToken();
-
     if (token && !requestHeaders.has('Authorization')) {
       requestHeaders.set('Authorization', `Bearer ${token}`);
     }
@@ -99,7 +100,7 @@ export async function apiFetch<T>(path: string, init: ApiFetchInit = {}): Promis
   });
 
   if (response.status === 401 && !skipAuth && !_isRetry) {
-    const refreshed = await ensureRefresh();
+    const refreshed = await ensureRefresh(token !== null);
 
     if (refreshed) {
       return apiFetch<T>(path, {
