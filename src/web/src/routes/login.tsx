@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -75,18 +75,21 @@ function LoginPage(): React.JSX.Element {
   }
 
   return (
-    <section className="max-w-[400px]">
-      <h1>Sign in</h1>
+    <section className="mx-auto w-full max-w-[472px] rounded-lg border border-slate-300 p-7 shadow-sm sm:p-9">
+      <h1 className="mb-5 text-3xl font-medium leading-tight text-slate-950">
+        Sign in or create an account
+      </h1>
 
-      {redirect && <p className="opacity-60">Sign in to continue to {redirect}</p>}
+      {redirect && <p className="mb-4 text-sm text-slate-600">Sign in to continue to {redirect}</p>}
 
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="mt-6 grid gap-4">
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="grid gap-4">
         <FormField
           label="Email"
           type="email"
           autoComplete="email"
           {...register('email')}
           error={errors.email?.message}
+          className="h-11 rounded-sm border-slate-400 bg-white"
         />
 
         <FormField
@@ -95,18 +98,43 @@ function LoginPage(): React.JSX.Element {
           autoComplete="current-password"
           {...register('password')}
           error={errors.password?.message}
+          className="h-11 rounded-sm border-slate-400 bg-white"
         />
 
         {submitError && (
-          <div role="alert" className="text-[var(--color-danger)]">
+          <div role="alert" className="text-sm text-[var(--color-danger)]">
             {submitError}
           </div>
         )}
 
-        <Button type="submit" disabled={isSubmitting} block>
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          block
+          className="h-11 rounded-full bg-amber-400 text-slate-950 hover:bg-amber-300"
+        >
           {isSubmitting ? 'Signing in…' : 'Sign in'}
         </Button>
       </form>
+
+      <p className="mt-5 text-sm leading-5 text-slate-800">
+        By continuing, you agree to ShopSphere&apos;s{' '}
+        <span className="text-sky-700 underline">Conditions of Use</span> and{' '}
+        <span className="text-sky-700 underline">Privacy Notice</span>.
+      </p>
+      <a
+        href="mailto:support@shopsphere.local"
+        className="mt-5 inline-block text-sky-700 hover:underline"
+      >
+        Need help?
+      </a>
+
+      <div className="mt-7 border-t border-slate-300 pt-5">
+        <p className="font-semibold text-slate-950">New to ShopSphere?</p>
+        <Link to="/register" className="mt-2 inline-block text-sky-700 hover:underline">
+          Create your ShopSphere account
+        </Link>
+      </div>
     </section>
   );
 }

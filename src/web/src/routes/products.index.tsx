@@ -78,19 +78,14 @@ function ProductsIndexPage(): React.JSX.Element {
   const totalAvailable = query.data.pages[0]?.totalCount ?? totalLoaded;
 
   return (
-    <section
-      className="grid gap-6"
-      style={{
-        gridTemplateColumns: '240px 1fr',
-      }}
-    >
+    <section className="mx-auto grid w-full max-w-screen-2xl grid-cols-1 items-start gap-5 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-6">
       <ProductFilters />
 
-      <div className="grid gap-4">
-        <header className="flex items-baseline justify-between">
-          <h1 className="text-2xl font-semibold">Products</h1>
+      <div className="grid min-w-0 content-start gap-4">
+        <header className="flex flex-wrap items-baseline justify-between gap-2">
+          <h1 className="text-2xl font-semibold text-slate-900">Products</h1>
 
-          <p className="text-sm text-[var(--color-text-muted)]">
+          <p className="text-sm text-slate-500">
             Showing {totalLoaded} of {totalAvailable}
           </p>
         </header>

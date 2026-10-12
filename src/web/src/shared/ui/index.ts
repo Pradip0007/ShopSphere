@@ -1,3 +1,4 @@
+export { BrandLogo } from './BrandLogo';
 export {
   Button,
   type ButtonProps,

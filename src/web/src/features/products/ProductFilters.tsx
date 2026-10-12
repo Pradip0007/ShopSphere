@@ -43,8 +43,12 @@ export function ProductFilters(): React.JSX.Element {
   }, [debouncedQ, debouncedMin, debouncedMax, navigate]);
 
   return (
-    <aside className="grid gap-4">
-      <div className="grid gap-1">
+    <aside className="grid grid-cols-1 content-start items-start gap-x-4 gap-y-4 self-start rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-2 lg:sticky lg:top-4 lg:grid-cols-1">
+      <h2 className="text-base font-semibold text-slate-900 sm:col-span-2 lg:col-span-1">
+        Refine products
+      </h2>
+
+      <div className="grid content-start gap-2 sm:col-span-2 lg:col-span-1">
         <label htmlFor="filter-q" className="text-sm font-medium">
           Search
         </label>
@@ -54,11 +58,11 @@ export function ProductFilters(): React.JSX.Element {
           value={q}
           onChange={(event) => setQ(event.target.value)}
           placeholder="Search products…"
-          className="h-10 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3"
+          className="h-10 min-w-0 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
         />
       </div>
 
-      <div className="grid gap-1">
+      <div className="grid content-start gap-2">
         <label htmlFor="filter-category" className="text-sm font-medium">
           Category
         </label>
@@ -89,7 +93,7 @@ export function ProductFilters(): React.JSX.Element {
         </select>
       </div>
 
-      <div className="grid gap-1">
+      <div className="grid content-start gap-2">
         <label htmlFor="filter-sort" className="text-sm font-medium">
           Sort
         </label>
@@ -118,8 +122,8 @@ export function ProductFilters(): React.JSX.Element {
         </select>
       </div>
 
-      <fieldset className="grid gap-1">
-        <legend className="text-sm font-medium">Price range</legend>
+      <fieldset className="grid content-start gap-2 sm:col-span-2 lg:col-span-1">
+        <legend className="mb-2 text-sm font-medium text-slate-800">Price range</legend>
 
         <div className="flex items-center gap-2">
           <input
@@ -129,10 +133,12 @@ export function ProductFilters(): React.JSX.Element {
             value={minPrice}
             onChange={(event) => setMinPrice(event.target.value)}
             placeholder="Min"
-            className="h-10 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3"
+            className="h-10 w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
 
-          <span aria-hidden>–</span>
+          <span aria-hidden className="text-slate-400">
+            –
+          </span>
 
           <input
             aria-label="Maximum price"
@@ -141,14 +147,15 @@ export function ProductFilters(): React.JSX.Element {
             value={maxPrice}
             onChange={(event) => setMaxPrice(event.target.value)}
             placeholder="Max"
-            className="h-10 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3"
+            className="h-10 w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
         </div>
       </fieldset>
 
       <Button
-        variant="ghost"
+        variant="outline"
         size="sm"
+        className="w-full border-slate-300 text-slate-700 hover:border-blue-300 hover:bg-blue-50 sm:col-span-2 lg:col-span-1"
         onClick={() => {
           setQ('');
           setMinPrice('');

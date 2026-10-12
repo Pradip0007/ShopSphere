@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { login, register as registerApi } from '@/features/auth/api';
@@ -78,8 +78,8 @@ function RegisterPage(): React.JSX.Element {
   }
 
   return (
-    <section className="max-w-[400px]">
-      <h1>Create account</h1>
+    <section className="mx-auto w-full max-w-[472px] rounded-lg border border-slate-300 p-7 shadow-sm sm:p-9">
+      <h1 className="mb-5 text-3xl font-medium leading-tight text-slate-950">Create account</h1>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="grid gap-4">
         <FormField
@@ -88,6 +88,7 @@ function RegisterPage(): React.JSX.Element {
           autoComplete="email"
           {...register('email')}
           error={errors.email?.message}
+          className="h-11 rounded-sm border-slate-400 bg-white"
         />
 
         <FormField
@@ -96,6 +97,7 @@ function RegisterPage(): React.JSX.Element {
           autoComplete="name"
           {...register('displayName')}
           error={errors.displayName?.message}
+          className="h-11 rounded-sm border-slate-400 bg-white"
         />
 
         <FormField
@@ -104,6 +106,7 @@ function RegisterPage(): React.JSX.Element {
           autoComplete="new-password"
           {...register('password')}
           error={errors.password?.message}
+          className="h-11 rounded-sm border-slate-400 bg-white"
         />
 
         <FormField
@@ -112,6 +115,7 @@ function RegisterPage(): React.JSX.Element {
           autoComplete="new-password"
           {...register('confirmPassword')}
           error={errors.confirmPassword?.message}
+          className="h-11 rounded-sm border-slate-400 bg-white"
         />
 
         {submitError && (
@@ -120,10 +124,26 @@ function RegisterPage(): React.JSX.Element {
           </div>
         )}
 
-        <Button type="submit" disabled={isSubmitting} block>
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          block
+          className="h-11 rounded-full bg-amber-400 text-slate-950 hover:bg-amber-300"
+        >
           {isSubmitting ? 'Creating…' : 'Create account'}
         </Button>
       </form>
+      <p className="mt-5 text-sm leading-5 text-slate-800">
+        By creating an account, you agree to ShopSphere&apos;s{' '}
+        <span className="text-sky-700 underline">Conditions of Use</span> and{' '}
+        <span className="text-sky-700 underline">Privacy Notice</span>.
+      </p>
+      <div className="mt-7 border-t border-slate-300 pt-5 text-sm">
+        <span>Already have an account? </span>
+        <Link to="/login" search={{}} className="text-sky-700 hover:underline">
+          Sign in
+        </Link>
+      </div>
     </section>
   );
 }

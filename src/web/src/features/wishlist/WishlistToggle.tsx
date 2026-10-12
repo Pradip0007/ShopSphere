@@ -32,9 +32,8 @@ export function WishlistToggle({ productId, className }: WishlistToggleProps): R
       disabled={isPending}
       onClick={handleToggle}
       className={cn(
-        'grid size-10 place-items-center rounded-full',
-        'transition-colors',
-        'hover:bg-[var(--color-surface-muted)]',
+        'grid size-10 place-items-center rounded-lg transition-colors',
+        isInWishlist ? 'text-pink-600 hover:bg-pink-100' : 'text-slate-500 hover:text-pink-600',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500',
         'disabled:pointer-events-none disabled:opacity-60',
         className,
@@ -42,11 +41,11 @@ export function WishlistToggle({ productId, className }: WishlistToggleProps): R
     >
       <svg
         viewBox="0 0 24 24"
-        fill={isInWishlist ? 'currentColor' : 'none'}
+        fill={isInWishlist ? 'currentColor' : 'white'}
         stroke="currentColor"
-        strokeWidth="1.8"
+        strokeWidth={isInWishlist ? '1.5' : '1.8'}
         aria-hidden="true"
-        className="size-5"
+        className="size-5 transition-transform duration-150 group-hover:scale-105"
       >
         <path
           strokeLinecap="round"

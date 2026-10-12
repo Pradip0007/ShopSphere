@@ -45,9 +45,13 @@ export function StatusBadge({ status }: StatusBadgeProps): React.JSX.Element {
           background: dot,
         }}
       />
-      {status}
+      {formatStatus(status)}
     </span>
   );
+}
+
+function formatStatus(status: OrderStatus): string {
+  return status.replace(/([a-z])([A-Z])/g, '$1 $2');
 }
 
 function statusDotColor(status: OrderStatus): string {

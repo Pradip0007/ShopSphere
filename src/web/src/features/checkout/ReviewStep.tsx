@@ -42,12 +42,12 @@ export function ReviewStep({
 
   return (
     <div className="grid gap-6">
-      <div className="grid gap-2">
+      <div className="grid max-w-4xl gap-3">
         <h2 className="text-lg font-semibold">Review</h2>
 
-        <ul className="list-none divide-y rounded-md border border-[var(--color-border)] p-0">
+        <ul className="list-none divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white p-0">
           {review.data.items.map((item) => (
-            <li key={item.productId} className="flex items-start justify-between gap-4 p-4">
+            <li key={item.productId} className="flex items-start justify-between gap-4 p-5">
               <div className="grid gap-1">
                 <span className="font-medium">
                   {item.productName} × {item.quantity}
@@ -62,7 +62,7 @@ export function ReviewStep({
             </li>
           ))}
 
-          <li className="flex items-center justify-between p-4 text-lg font-semibold">
+          <li className="flex items-center justify-between bg-slate-50 p-5 text-lg font-semibold">
             <span>Subtotal</span>
 
             <span>{formatMoney(review.data.subtotal, review.data.currency)}</span>
@@ -70,8 +70,8 @@ export function ReviewStep({
         </ul>
       </div>
 
-      <div className="grid gap-2">
-        <label className="flex items-start gap-2">
+      <div className="grid max-w-4xl gap-2">
+        <label className="flex items-start gap-2 text-slate-700">
           <input type="checkbox" {...register('agreedToTerms')} />
 
           <span>I agree to the terms of sale.</span>
@@ -89,12 +89,17 @@ export function ReviewStep({
         )}
       </div>
 
-      <div className="flex justify-between">
+      <div className="flex max-w-4xl justify-between border-t border-slate-100 pt-5">
         <Button type="button" variant="secondary" onClick={onBack}>
           Back
         </Button>
 
-        <Button type="submit" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          size="lg"
+          className="min-w-36 bg-blue-700 text-white hover:bg-blue-800"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? 'Placing order…' : 'Place order'}
         </Button>
       </div>

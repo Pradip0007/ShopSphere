@@ -1,10 +1,10 @@
 import type { Page } from '@playwright/test';
 
-export class CartDrawer {
+export class CartPage {
   constructor(private readonly page: Page) {}
 
   async open(): Promise<void> {
-    await this.page.getByTestId('cart-drawer-trigger').click();
+    await this.page.getByTestId('cart-page-link').click();
   }
 
   count() {
@@ -19,7 +19,7 @@ export class CartDrawer {
     await this.lines().first().getByTestId('cart-line-remove').click();
   }
 
-  drawer() {
-    return this.page.getByTestId('cart-drawer');
+  content() {
+    return this.page.getByTestId('cart-page-content');
   }
 }
