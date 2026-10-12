@@ -22,7 +22,7 @@ export function AddressFields({ base, register, errors }: AddressFieldsProps): R
   };
 
   return (
-    <div className="grid gap-3 md:grid-cols-2">
+    <div className="grid gap-x-4 gap-y-4 md:grid-cols-2">
       <div className="md:col-span-2">
         <FormField
           data-testid={base === 'shipping' ? 'ship-full-name' : undefined}

@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 
@@ -22,6 +22,7 @@ const STEPS = ['Address', 'Payment', 'Review'] as const;
 function CheckoutPage(): React.JSX.Element {
   const cart = useQuery(cartQueryOptions());
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const [step, setStep] = useState(0);
   const [paymentMethodId, setPaymentMethodId] = useState<string | null>(null);
@@ -68,7 +69,11 @@ function CheckoutPage(): React.JSX.Element {
         queryKey: ['cart'],
       });
 
-      window.location.href = `/orders/${response.orderId}`;
+      await navigate({
+        to: '/orders/$id',
+        params: { id: response.orderId },
+        search: { placed: true },
+      });
     },
     onError: (error) => {
       setSubmitError(error.message);
@@ -136,40 +141,67 @@ function CheckoutPage(): React.JSX.Element {
   }
 
   if (cart.isPending) {
-    return <p>Loading cart…</p>;
+    return (
+      <section className="mx-auto grid max-w-6xl gap-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <h1 className="text-2xl font-semibold text-slate-950">Checkout</h1>
+        <p className="text-slate-500">Loading cart…</p>
+      </section>
+    );
   }
 
   if (cart.isError || !cart.data || cart.data.lines.length === 0) {
     return (
-      <section className="grid gap-3">
-        <h1 className="text-2xl font-semibold">Checkout</h1>
+      <section className="mx-auto grid max-w-6xl gap-3 rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <h1 className="text-2xl font-semibold text-slate-950">Checkout</h1>
 
-        <p>Your cart is empty.</p>
+        <p className="text-slate-600">Your cart is empty.</p>
       </section>
     );
   }
 
   return (
-    <section className="grid max-w-3xl gap-6">
-      <h1 className="text-2xl font-semibold">Checkout</h1>
+    <section className="mx-auto grid max-w-6xl gap-7 rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <header className="grid gap-6 border-b border-slate-100 pb-6">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">
+              Secure checkout
+            </p>
+            <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-950">Checkout</h1>
+          </div>
+          <p className="text-sm text-slate-500">
+            {fields.length} item{fields.length === 1 ? '' : 's'} in your order
+          </p>
+        </div>
 
-      <WizardSteps steps={[...STEPS]} current={step} />
+        <WizardSteps steps={[...STEPS]} current={step} />
+      </header>
 
       <form
         data-testid="checkout-form"
         onSubmit={(event) => {
           void handleSubmit(onSubmit)(event);
         }}
-        className="grid gap-6"
+        className="grid gap-7"
       >
         {step === 0 && (
-          <div className="grid gap-4">
-            <h2 className="text-lg font-semibold">Shipping address</h2>
+          <div className="grid max-w-4xl gap-6">
+            <div>
+              <h2 className="text-xl font-semibold text-slate-900">Shipping address</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Enter the address where you would like your order delivered.
+              </p>
+            </div>
 
             <AddressFields base="shipping" register={register} errors={errors} />
 
-            <div className="flex justify-end">
-              <Button type="button" onClick={() => void goNext()}>
+            <div className="flex justify-end border-t border-slate-100 pt-5">
+              <Button
+                type="button"
+                size="lg"
+                className="min-w-32 bg-blue-700 text-white hover:bg-blue-800"
+                onClick={() => void goNext()}
+              >
                 Continue
               </Button>
             </div>
@@ -177,8 +209,13 @@ function CheckoutPage(): React.JSX.Element {
         )}
 
         {step === 1 && (
-          <div className="grid gap-4">
-            <h2 className="text-lg font-semibold">Payment</h2>
+          <div className="grid max-w-2xl gap-6">
+            <div>
+              <h2 className="text-xl font-semibold text-slate-900">Payment</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Your payment information is encrypted and securely processed.
+              </p>
+            </div>
 
             <PaymentStep
               onPaymentMethodReady={(id) => {
@@ -196,6 +233,7 @@ function CheckoutPage(): React.JSX.Element {
               <Button
                 type="button"
                 variant="secondary"
+                className="min-w-24"
                 onClick={() => {
                   setSubmitError(null);
                   setStep(0);
@@ -204,7 +242,12 @@ function CheckoutPage(): React.JSX.Element {
                 Back
               </Button>
 
-              <Button type="button" onClick={() => void goNext()}>
+              <Button
+                type="button"
+                size="lg"
+                className="min-w-32 bg-blue-700 text-white hover:bg-blue-800"
+                onClick={() => void goNext()}
+              >
                 Continue
               </Button>
             </div>
@@ -225,8 +268,11 @@ function CheckoutPage(): React.JSX.Element {
         )}
       </form>
 
-      <p className="text-sm text-[var(--color-text-muted)]">
-        {fields.length} cart item{fields.length === 1 ? '' : 's'} loaded.
+      <p className="flex items-center gap-2 border-t border-slate-100 pt-5 text-sm text-slate-500">
+        <span aria-hidden="true" className="text-emerald-600">
+          ●
+        </span>
+        Your order is protected with secure checkout.
       </p>
     </section>
   );

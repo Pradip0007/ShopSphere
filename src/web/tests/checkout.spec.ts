@@ -41,11 +41,15 @@ test.describe('Checkout', () => {
 
     await authenticatedPage.getByRole('button', { name: 'Place order' }).click();
 
-    await authenticatedPage.waitForURL(/\/orders\/[^/]+$/);
+    await authenticatedPage.waitForURL(/\/orders\/[^/]+\?placed=true$/);
 
     const orderNumber = authenticatedPage.getByTestId('order-number');
 
     await expect(orderNumber).toBeVisible();
     await expect(orderNumber).toHaveText(/^Order .+/);
+    await expect(authenticatedPage.getByTestId('order-placed-confirmation')).toBeVisible();
+    await expect(
+      authenticatedPage.getByRole('heading', { name: 'Your order has been placed!' }),
+    ).toBeVisible();
   });
 });

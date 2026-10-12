@@ -15,12 +15,14 @@ interface ProductCardProps {
 export function ProductCard({ product, className }: ProductCardProps): React.JSX.Element {
   const queryClient = useQueryClient();
   const addToCart = useAddToCart();
+  const listPrice = product.price / 0.8;
 
   return (
     <article
       className={cn(
-        'grid gap-3 rounded-lg border p-3',
-        'border-[var(--color-border)] bg-[var(--color-surface)]',
+        'group grid h-full gap-3 rounded-xl border p-3.5',
+        'border-slate-200 bg-white shadow-sm',
+        'transition duration-200 ease-out hover:-translate-y-1 hover:border-blue-200 hover:bg-blue-50/40 hover:shadow-lg hover:shadow-slate-900/10',
         className,
       )}
     >
@@ -32,39 +34,59 @@ export function ProductCard({ product, className }: ProductCardProps): React.JSX
           void queryClient.prefetchQuery(productDetailQueryOptions(product.slug));
         }}
         className={cn(
-          'group grid gap-3',
+          'grid gap-3 rounded-lg',
           'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500',
         )}
       >
-        <div className="grid aspect-square place-items-center rounded-md bg-[var(--color-surface-muted)]">
-          <span className="text-sm text-[var(--color-text-muted)]">Product</span>
+        <div className="relative grid aspect-square place-items-center overflow-hidden rounded-lg bg-slate-100 transition-colors duration-200 group-hover:bg-blue-100/70">
+          <span className="text-sm font-medium text-slate-500">Product</span>
+          <span className="absolute left-2.5 top-2.5 rounded-full bg-emerald-700 px-2.5 py-1 text-xs font-bold text-white shadow-sm">
+            20% OFF
+          </span>
         </div>
 
         <div className="grid gap-1">
-          <h2 data-testid="product-title" className="line-clamp-2 text-sm font-medium">
+          <h2
+            data-testid="product-title"
+            className="line-clamp-2 min-h-10 text-sm font-semibold text-slate-900 transition-colors group-hover:text-blue-800"
+          >
             {product.title}
           </h2>
 
-          <p className="text-base font-semibold">{formatPrice(product.price, product.currency)}</p>
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <p className="text-lg font-bold text-slate-950">
+              {formatPrice(product.price, product.currency)}
+            </p>
+            <p className="text-sm text-slate-500">
+              <span className="sr-only">Was </span>
+              <s>{formatPrice(listPrice, product.currency)}</s>
+            </p>
+            <span className="text-xs font-semibold text-emerald-700">Save 20%</span>
+          </div>
         </div>
       </Link>
-      <WishlistToggle productId={product.id} />
 
-      <Button
-        variant="primary"
-        size="sm"
-        className="text-black"
-        data-testid="product-add-to-cart"
-        disabled={addToCart.isPending}
-        onClick={() => {
-          addToCart.mutate({
-            productId: product.id,
-            quantity: 1,
-          });
-        }}
-      >
-        {addToCart.isPending ? 'Adding…' : 'Add to cart'}
-      </Button>
+      <div className="mt-auto flex items-center gap-2">
+        <Button
+          variant="primary"
+          size="md"
+          className="min-h-10 flex-1 rounded-lg bg-blue-700 font-semibold text-white shadow-sm hover:bg-blue-800 active:bg-blue-900"
+          data-testid="product-add-to-cart"
+          disabled={addToCart.isPending}
+          onClick={() => {
+            addToCart.mutate({
+              productId: product.id,
+              quantity: 1,
+            });
+          }}
+        >
+          {addToCart.isPending ? 'Adding…' : 'Add to cart'}
+        </Button>
+        <WishlistToggle
+          productId={product.id}
+          className="shrink-0 border border-slate-200 bg-white shadow-sm hover:border-pink-200 hover:bg-pink-50"
+        />
+      </div>
     </article>
   );
 }

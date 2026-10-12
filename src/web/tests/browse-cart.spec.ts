@@ -16,8 +16,8 @@ test('new user starts with an empty cart', async ({ authenticatedPage, cart }) =
 
   await cart.open();
 
-  await expect(cart.drawer()).toContainText('Your cart');
-  await expect(cart.drawer()).toContainText('Your cart is empty.');
+  await expect(cart.content()).toContainText('Your cart');
+  await expect(cart.content()).toContainText('Your cart is empty.');
   await expect(cart.lines()).toHaveCount(0);
 });
 
@@ -37,6 +37,70 @@ test('guest can browse products and open the cart without login', async ({ page 
   await page.goto('/checkout');
 
   await expect(page).toHaveURL(/\/login\?redirect=%2Fcheckout/);
+});
+
+test('cart page shows product information and order pricing', async ({ page }) => {
+  await page.route('**/api/**', (route) => {
+    const url = new URL(route.request().url());
+
+    if (url.pathname === '/api/v1/cart/') {
+      return route.fulfill({
+        json: {
+          key: 'cart-test',
+          totalUnits: 2,
+          lines: [{ productId: 'product-1', quantity: 2 }],
+        },
+      });
+    }
+
+    if (url.pathname === '/api/v1/products') {
+      return route.fulfill({
+        json: {
+          items: [
+            {
+              id: 'product-1',
+              title: 'Sample headphones',
+              slug: 'sample-headphones',
+              sku: 'SAMPLE-1',
+              price: 25,
+              currency: 'GBP',
+              categoryId: 'electronics',
+            },
+          ],
+          page: 1,
+          pageSize: 100,
+          totalCount: 1,
+          totalPages: 1,
+          hasNext: false,
+          hasPrevious: false,
+        },
+      });
+    }
+
+    return route.fulfill({ status: 401 });
+  });
+
+  await page.goto('/products');
+  await page.getByTestId('cart-page-link').click();
+
+  await expect(page).toHaveURL(/\/cart$/);
+  await expect(page.getByRole('heading', { name: 'Your cart' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Sample headphones' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Price Details' })).toBeVisible();
+  await expect(page.getByText('£50.00').first()).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Place order' })).toBeVisible();
+  await expect(page.getByTestId('cart-drawer')).toHaveCount(0);
+});
+
+test('guest can search products from the header', async ({ page }) => {
+  await page.route('**/api/**', (route) => route.fulfill({ status: 401 }));
+  await page.goto('/');
+
+  await page.getByRole('searchbox', { name: 'Search ShopSphere' }).fill('wireless headphones');
+  await page.getByRole('button', { name: 'Search' }).click();
+
+  await expect(page).toHaveURL(/\/products\?q=wireless(\+|%20)headphones/);
+  await expect(page.getByRole('heading', { name: 'Products' })).toBeVisible();
 });
 
 test('guest cart is preserved when checkout requires sign in', async ({
@@ -61,7 +125,7 @@ test('guest cart is preserved when checkout requires sign in', async ({
   await expect(cart.count()).toHaveText('1');
   await expect(cart.lines()).toHaveCount(1);
 
-  await cart.drawer().getByRole('button', { name: 'Go to checkout' }).click();
+  await cart.content().getByRole('button', { name: 'Place order' }).click();
   await expect(page).toHaveURL(/\/login\?redirect=%2Fcheckout/);
 
   await page.getByLabel('Email').fill(email);
@@ -87,6 +151,6 @@ test('user can remove an item from the cart', async ({ authenticatedPage, produc
 
   await cart.removeFirstItem();
 
-  await expect(cart.drawer()).toContainText('Your cart is empty.');
+  await expect(cart.content()).toContainText('Your cart is empty.');
   await expect(cart.lines()).toHaveCount(0);
 });
